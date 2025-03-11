@@ -1,0 +1,57 @@
+package com.example.demo.model;
+
+import java.time.LocalDateTime;
+import java.util.UUID;
+
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Inheritance;
+import jakarta.persistence.InheritanceType;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
+import jakarta.persistence.Temporal;
+import jakarta.persistence.TemporalType;
+import lombok.Data;
+
+@Data
+@Entity
+@Inheritance(strategy = InheritanceType.JOINED)
+public class Usuario {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
+
+    private String nome;
+
+    @ManyToOne
+    @JoinColumn(name = "endereco_id")
+    private Endereco endereco;
+
+    private String telefone;
+
+    private boolean ativo;
+
+    @Temporal(TemporalType.TIMESTAMP)
+    private LocalDateTime dataCriacao;
+
+    @Temporal(TemporalType.TIMESTAMP)
+    private LocalDateTime ultimaAlteracao;
+
+    @PreUpdate
+    public void preUpdate() {
+        ultimaAlteracao = LocalDateTime.now();
+    }
+
+    @PrePersist
+    public void prePersist() {
+        final LocalDateTime atual = LocalDateTime.now();
+        dataCriacao = atual;
+        ultimaAlteracao = atual;
+    }
+    
+}
