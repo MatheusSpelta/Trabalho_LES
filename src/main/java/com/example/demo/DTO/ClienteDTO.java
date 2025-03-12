@@ -1,5 +1,8 @@
 package com.example.demo.DTO;
 
-public class ClienteDTO {
+import com.example.demo.model.Cliente;
+import com.example.demo.model.Endereco;
+
+public record ClienteDTO(Cliente cliente, Endereco endereco) {
     
 }

@@ -8,11 +8,14 @@ import javax.management.relation.RelationTypeNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.example.demo.DTO.ClienteDTO;
 import com.example.demo.model.Cliente;
+import com.example.demo.model.Endereco;
 import com.example.demo.repository.ClienteRepository;
 
 
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.transaction.Transactional;
 
 
 @Service
@@ -22,28 +25,44 @@ public class ClienteService {
     @Autowired
     private ClienteRepository clienteRepository;
 
-    public Cliente saveAll(Cliente cliente) {
+    @Autowired
+    private EnderecoService enderecoService;
+
+    @Transactional
+    public Cliente saveAll(ClienteDTO clienteDTO) {
+        Cliente cliente = clienteDTO.cliente();
+        Endereco endereco = clienteDTO.endereco();
         
         validateCliente(cliente);
+        
+        Endereco end = enderecoService.saveAll(endereco);
+        cliente.setEndereco(end);
         return clienteRepository.save(cliente);
     }
 
-    public Cliente editId(UUID id, Cliente cliente) throws RelationTypeNotFoundException {
+    @Transactional
+    public Cliente editId(UUID id, ClienteDTO clienteDTO) throws RelationTypeNotFoundException {
+    Cliente cliente = clienteDTO.cliente();
+        Endereco endereco = clienteDTO.endereco();
+
         Cliente editado = clienteRepository.findById(id)
-           .orElseThrow(() -> new RelationTypeNotFoundException("Cliente com id " + id + " não encontrado."));
+            .orElseThrow(() -> new RelationTypeNotFoundException("Cliente com id " + id + " não encontrado."));
 
-           validateCliente(cliente, id);
+        validateCliente(cliente, id);
 
-            editado.setNome(cliente.getNome());
-            editado.setTelefone(cliente.getTelefone());
-            editado.setAtivo(cliente.isAtivo());
-            editado.setCpf(cliente.getCpf());
-            editado.setEndereco(cliente.getEndereco());
-            editado.setCartao(cliente.getCartao());
-            editado.setLimiteCredito(cliente.getLimiteCredito());
-            editado.setMatricula(cliente.getMatricula());
+        
+        enderecoService.editId(endereco.getId(), endereco);
+        editado.setEndereco(endereco);
 
-            return clienteRepository.save(editado);
+        editado.setNome(cliente.getNome());
+        editado.setTelefone(cliente.getTelefone());
+        editado.setAtivo(cliente.isAtivo());
+        editado.setCpf(cliente.getCpf());
+        editado.setCartao(cliente.getCartao());
+        editado.setLimiteCredito(cliente.getLimiteCredito());
+        editado.setMatricula(cliente.getMatricula());
+
+        return clienteRepository.save(editado);
     }
 
     public List<Cliente> findAll() {
@@ -97,6 +116,11 @@ public class ClienteService {
                     throw new IllegalArgumentException("Já existe um cliente com o cartão " + cliente.getCartao());
                 }
             });
+    }
+
+    public Cliente findByCartao(String cartao) throws RelationTypeNotFoundException {
+        return clienteRepository.findByCartao(cartao)
+            .orElseThrow(() -> new RelationTypeNotFoundException("Cliente com cartão " + cartao + " não encontrado."));
     }
     
 }

@@ -1,5 +1,8 @@
 package com.example.demo.DTO;
 
-public class FornecedorDTO {
+import com.example.demo.model.Endereco;
+import com.example.demo.model.Fornecedor;
+
+public record FornecedorDTO(Fornecedor fornecedor, Endereco endereco) {
     
 }

@@ -10,7 +10,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.example.demo.DTO.FuncionarioDTO;
 import com.example.demo.DTO.LoginRequest;
+import com.example.demo.model.Endereco;
 import com.example.demo.model.Funcionario;
 import com.example.demo.repository.FuncionarioRepository;
 
@@ -25,25 +27,39 @@ public class FuncionarioService {
     private FuncionarioRepository funcionarioRepository;
 
     @Autowired
+    private EnderecoService enderecoService;
+
+    @Autowired
     private PasswordEncoder passwordEncoder;
 
-    public Funcionario saveAll(Funcionario funcionario) {
+    public Funcionario saveAll(FuncionarioDTO funcionarioDTO) {
+
+        Funcionario funcionario = funcionarioDTO.funcionario();
+        Endereco endereco = funcionarioDTO.endereco();
+
+        Endereco ende = enderecoService.saveAll(endereco);
+        funcionario.setEndereco(ende);
+
         funcionario.setSenha(passwordEncoder.encode(funcionario.getSenha()));
         return funcionarioRepository.save(funcionario);
     }
 
-    public Funcionario editId(UUID id, Funcionario funcionario) throws RelationTypeNotFoundException{
+      public Funcionario editId(UUID id, FuncionarioDTO funcionarioDTO) throws RelationTypeNotFoundException {
+        Funcionario funcionario = funcionarioDTO.funcionario();
+        Endereco endereco = funcionarioDTO.endereco();
+
         Funcionario editado = funcionarioRepository.findById(id)
             .orElseThrow(() -> new RelationTypeNotFoundException("Funcionario com id " + id + " não encontrado."));
+
+        enderecoService.editId(endereco.getId(),endereco);
+        editado.setEndereco(endereco);
 
         editado.setNome(funcionario.getNome());
         editado.setTelefone(funcionario.getTelefone());
         editado.setAtivo(funcionario.isAtivo());
         editado.setCpf(funcionario.getCpf());
-        editado.setEndereco(funcionario.getEndereco());
         editado.setEmail(funcionario.getEmail());
         editado.setSenha(passwordEncoder.encode(funcionario.getSenha()));
-        editado.setTipoUsuario(funcionario.getTipoUsuario());
 
         return funcionarioRepository.save(editado);
     }
