@@ -3,7 +3,11 @@ package com.example.demo.model;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+import com.example.demo.Enum.FormaPagamento;
+
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -28,6 +32,11 @@ public class Venda {
     @ManyToOne
     @JoinColumn(name = "cliente_id")
     private Cliente cliente;
+
+    private boolean isPago;
+    
+    @Enumerated(EnumType.STRING)
+    private FormaPagamento formaPagamento;
 
     @Temporal(TemporalType.TIMESTAMP)
     private LocalDateTime dataCriacao;

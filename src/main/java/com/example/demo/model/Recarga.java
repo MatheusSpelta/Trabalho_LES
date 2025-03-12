@@ -17,7 +17,7 @@ import lombok.Data;
 
 @Data
 @Entity
-public class Saldo {
+public class Recarga {
     
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)

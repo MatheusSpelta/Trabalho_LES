@@ -11,7 +11,7 @@ import lombok.EqualsAndHashCode;
 @EqualsAndHashCode(callSuper = true)
 public class Funcionario extends Usuario{
     
-    private String CPF;
+    private String cpf;
     private String email;
     private String senha;
 

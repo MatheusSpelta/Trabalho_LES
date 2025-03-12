@@ -21,7 +21,7 @@ public class Endereco {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    private String CEP;
+    private String cep;
     private String rua;
     private String bairro;
     private String cidade;

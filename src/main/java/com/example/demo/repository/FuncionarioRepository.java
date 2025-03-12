@@ -10,4 +10,6 @@ import com.example.demo.model.Funcionario;
 @Repository
 public interface FuncionarioRepository extends JpaRepository<Funcionario, UUID> {
     
+    Funcionario findByEmail(String email);
+
 }

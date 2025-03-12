@@ -34,6 +34,7 @@ public class Compra {
 
     private boolean isPago;
     private Date dataPagamento;
+    private boolean ativo;
 
     @Temporal(TemporalType.TIMESTAMP)
     private LocalDateTime dataCriacao;
