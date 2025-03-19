@@ -11,7 +11,7 @@ services:
       - postgres_data:/var/lib/postgresql/data
 
   app:
-    build: .
+    image: speltamatheus/les:latest
     ports:
       - "5021:5020"
     depends_on:
@@ -21,6 +21,6 @@ services:
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: postgres
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
-      
+
 volumes:
   postgres_data:
