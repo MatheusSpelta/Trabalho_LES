@@ -1,5 +1,6 @@
 package com.example.demo.service;
 
+import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
@@ -24,10 +25,12 @@ public class CompraService {
         return compraRepository.save(compra);
     }
 
-    public Compra editId(UUID id, Compra compra) throws RelationTypeNotFoundException{
+    public Compra editId(UUID id, Compra compra) throws RelationTypeNotFoundException {
         Compra editado = compraRepository.findById(id)
-            .orElseThrow(() -> new RelationTypeNotFoundException("Compra com id " + id + " não encontrado."));
-        
+                .orElseThrow(() -> new RelationTypeNotFoundException("Compra com id " + id + " não encontrado."));
+
+        editado.setCodigo(compra.getCodigo());
+        editado.setDescricao(compra.getDescricao());
         editado.setFornecedor(compra.getFornecedor());
         editado.setValorTotal(compra.getValorTotal());
         editado.setDataCompra(compra.getDataCompra());
@@ -44,12 +47,12 @@ public class CompraService {
 
     public Compra findById(UUID id) throws RelationTypeNotFoundException {
         return compraRepository.findById(id)
-            .orElseThrow(() -> new RelationTypeNotFoundException("Compra com id " + id + " não encontrado."));
+                .orElseThrow(() -> new RelationTypeNotFoundException("Compra com id " + id + " não encontrado."));
     }
 
     public void changeAtivo(UUID id) throws RelationTypeNotFoundException {
         Compra compra = compraRepository.findById(id)
-            .orElseThrow(() -> new RelationTypeNotFoundException("Compra com id " + id + " não encontrado."));
+                .orElseThrow(() -> new RelationTypeNotFoundException("Compra com id " + id + " não encontrado."));
 
         compra.setAtivo(!compra.isAtivo());
         compraRepository.save(compra);
@@ -57,11 +60,27 @@ public class CompraService {
 
     public void changeIsPago(UUID id) throws RelationTypeNotFoundException {
         Compra compra = compraRepository.findById(id)
-            .orElseThrow(() -> new RelationTypeNotFoundException("Compra com id " + id + " não encontrado."));
+                .orElseThrow(() -> new RelationTypeNotFoundException("Compra com id " + id + " não encontrado."));
 
         compra.setPago(!compra.isPago());
         compraRepository.save(compra);
     }
 
-    
+    public List<Compra> findComprasVencidas() {
+        return compraRepository.findByDataVencimentoBeforeAndIsPagoFalseAndAtivoTrue(new Date());
+    }
+
+    public List<Compra> findComprasByFornecedor(UUID fornecedorId) {
+        return compraRepository.findByFornecedorId(fornecedorId);
+    }
+
+    public List<Compra> findComprasVencidasByFornecedor(UUID fornecedorId) {
+        return compraRepository.findByFornecedorIdAndDataVencimentoBeforeAndIsPagoFalseAndAtivoTrue(fornecedorId,
+                new Date());
+    }
+
+    public List<Compra> findComprasPagasByFornecedor(UUID fornecedorId) {
+        return compraRepository.findByFornecedorIdAndIsPagoTrue(fornecedorId);
+    }
+
 }

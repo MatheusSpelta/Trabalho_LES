@@ -1,6 +1,8 @@
 package com.example.demo.model;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.Date;
 import java.util.UUID;
 
@@ -28,6 +30,8 @@ public class Compra {
     @JoinColumn(name = "fornecedor_id")
     private Fornecedor fornecedor;
 
+    private String codigo;
+    private String descricao;
     private double valorTotal;
     private Date dataCompra;
     private Date dataVencimento;
@@ -44,12 +48,12 @@ public class Compra {
 
     @PreUpdate
     public void preUpdate() {
-        ultimaAlteracao = LocalDateTime.now();
+        ultimaAlteracao = ZonedDateTime.now(ZoneId.of("America/Sao_Paulo")).toLocalDateTime();
     }
 
     @PrePersist
     public void prePersist() {
-        final LocalDateTime atual = LocalDateTime.now();
+        final LocalDateTime atual = ZonedDateTime.now(ZoneId.of("America/Sao_Paulo")).toLocalDateTime();
         dataCriacao = atual;
         ultimaAlteracao = atual;
     }

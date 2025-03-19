@@ -1,6 +1,8 @@
 package com.example.demo.model;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.UUID;
 
 import com.example.demo.Enum.FormaPagamento;
@@ -22,7 +24,7 @@ import lombok.Data;
 @Data
 @Entity
 public class Venda {
-    
+
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
@@ -34,7 +36,7 @@ public class Venda {
     private Cliente cliente;
 
     private boolean isPago;
-    
+
     @Enumerated(EnumType.STRING)
     private FormaPagamento formaPagamento;
 
@@ -46,12 +48,12 @@ public class Venda {
 
     @PreUpdate
     public void preUpdate() {
-        ultimaAlteracao = LocalDateTime.now();
+        ultimaAlteracao = ZonedDateTime.now(ZoneId.of("America/Sao_Paulo")).toLocalDateTime();
     }
 
     @PrePersist
     public void prePersist() {
-        final LocalDateTime atual = LocalDateTime.now();
+        final LocalDateTime atual = ZonedDateTime.now(ZoneId.of("America/Sao_Paulo")).toLocalDateTime();
         dataCriacao = atual;
         ultimaAlteracao = atual;
     }

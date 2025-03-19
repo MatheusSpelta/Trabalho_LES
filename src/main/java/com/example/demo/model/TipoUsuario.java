@@ -1,6 +1,8 @@
 package com.example.demo.model;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.UUID;
 
 import jakarta.persistence.Entity;
@@ -32,12 +34,12 @@ public class TipoUsuario {
 
     @PreUpdate
     public void preUpdate() {
-        ultimaAlteracao = LocalDateTime.now();
+        ultimaAlteracao = ZonedDateTime.now(ZoneId.of("America/Sao_Paulo")).toLocalDateTime();
     }
 
     @PrePersist
     public void prePersist() {
-        final LocalDateTime atual = LocalDateTime.now();
+        final LocalDateTime atual = ZonedDateTime.now(ZoneId.of("America/Sao_Paulo")).toLocalDateTime();
         dataCriacao = atual;
         ultimaAlteracao = atual;
     }

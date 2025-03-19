@@ -1,6 +1,8 @@
 package com.example.demo.model;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.UUID;
 
 import jakarta.persistence.Entity;
@@ -17,7 +19,7 @@ import lombok.Data;
 @Data
 @Entity
 public class VendaProduto {
-    
+
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
@@ -39,7 +41,7 @@ public class VendaProduto {
 
     @PrePersist
     public void prePersist() {
-        dataCriacao =LocalDateTime.now();
+        dataCriacao = ZonedDateTime.now(ZoneId.of("America/Sao_Paulo")).toLocalDateTime();
     }
-    
+
 }
