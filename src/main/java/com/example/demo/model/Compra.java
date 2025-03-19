@@ -19,7 +19,7 @@ import lombok.Data;
 @Data
 @Entity
 public class Compra {
-    
+
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
@@ -34,7 +34,7 @@ public class Compra {
 
     private boolean isPago;
     private Date dataPagamento;
-    private boolean ativo;
+    private boolean ativo = true;
 
     @Temporal(TemporalType.TIMESTAMP)
     private LocalDateTime dataCriacao;

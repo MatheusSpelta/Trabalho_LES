@@ -16,7 +16,7 @@ import lombok.Data;
 @Data
 @Entity
 public class Endereco {
-    
+
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
@@ -25,8 +25,6 @@ public class Endereco {
     private String rua;
     private String bairro;
     private String cidade;
-    private String estado;
-    private String pais;
     private String complemento;
     private String numero;
 

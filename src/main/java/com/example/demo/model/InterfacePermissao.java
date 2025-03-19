@@ -16,14 +16,14 @@ import lombok.Data;
 @Data
 @Entity
 public class InterfacePermissao {
-    
+
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
     private String descricao;
     private String url;
-    private boolean ativo;
+    private boolean ativo = true;
 
     @Temporal(TemporalType.TIMESTAMP)
     private LocalDateTime dataCriacao;

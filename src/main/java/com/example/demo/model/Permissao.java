@@ -18,13 +18,13 @@ import lombok.Data;
 @Data
 @Entity
 public class Permissao {
-    
+
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
     private String descricao;
-    
+
     @ManyToOne
     @JoinColumn(name = "tipo_Permissao_Id")
     private TipoPermissao tipoPermissao;
@@ -37,7 +37,7 @@ public class Permissao {
     @JoinColumn(name = "interface_Id")
     private InterfacePermissao interfacePermissao;
 
-    private boolean ativo;
+    private boolean ativo = true;
 
     @Temporal(TemporalType.TIMESTAMP)
     private LocalDateTime dataCriacao;

@@ -15,14 +15,14 @@ import com.example.demo.DTO.LoginRequest;
 import com.example.demo.model.Endereco;
 import com.example.demo.model.Funcionario;
 import com.example.demo.repository.FuncionarioRepository;
+import com.example.demo.security.JwtUtil;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
-
 
 @Service
 @Tag(name = "Funcionario", description = "Fornece serviços web REST para acesso e manipulação de dados de Funcionarios")
 public class FuncionarioService {
-    
+
     @Autowired
     private FuncionarioRepository funcionarioRepository;
 
@@ -32,7 +32,16 @@ public class FuncionarioService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    @Autowired
+    private JwtUtil jwtUtil;
+
     public Funcionario saveAll(FuncionarioDTO funcionarioDTO) {
+        if (funcionarioRepository.findByEmail(funcionarioDTO.funcionario().getEmail()).isPresent()) {
+            throw new IllegalArgumentException("Email já cadastrado.");
+        }
+        if (funcionarioRepository.findByCpf(funcionarioDTO.funcionario().getCpf()).isPresent()) {
+            throw new IllegalArgumentException("CPF já cadastrado.");
+        }
 
         Funcionario funcionario = funcionarioDTO.funcionario();
         Endereco endereco = funcionarioDTO.endereco();
@@ -44,14 +53,21 @@ public class FuncionarioService {
         return funcionarioRepository.save(funcionario);
     }
 
-      public Funcionario editId(UUID id, FuncionarioDTO funcionarioDTO) throws RelationTypeNotFoundException {
+    public Funcionario editId(UUID id, FuncionarioDTO funcionarioDTO) throws RelationTypeNotFoundException {
         Funcionario funcionario = funcionarioDTO.funcionario();
         Endereco endereco = funcionarioDTO.endereco();
 
         Funcionario editado = funcionarioRepository.findById(id)
-            .orElseThrow(() -> new RelationTypeNotFoundException("Funcionario com id " + id + " não encontrado."));
+                .orElseThrow(() -> new RelationTypeNotFoundException("Funcionario com id " + id + " não encontrado."));
 
-        enderecoService.editId(endereco.getId(),endereco);
+        if (funcionarioRepository.findByEmail(funcionario.getEmail()).isPresent() && !funcionario.getId().equals(id)) {
+            throw new IllegalArgumentException("Email já cadastrado.");
+        }
+        if (funcionarioRepository.findByCpf(funcionario.getCpf()).isPresent() && !funcionario.getId().equals(id)) {
+            throw new IllegalArgumentException("CPF já cadastrado.");
+        }
+
+        enderecoService.editId(endereco.getId(), endereco);
         editado.setEndereco(endereco);
 
         editado.setNome(funcionario.getNome());
@@ -70,12 +86,12 @@ public class FuncionarioService {
 
     public Funcionario findById(UUID id) throws RelationTypeNotFoundException {
         return funcionarioRepository.findById(id)
-            .orElseThrow(() -> new RelationTypeNotFoundException("Funcionario com id " + id + " não encontrado."));
+                .orElseThrow(() -> new RelationTypeNotFoundException("Funcionario com id " + id + " não encontrado."));
     }
 
     public void changeAtivo(UUID id) throws RelationTypeNotFoundException {
         Funcionario funcionario = funcionarioRepository.findById(id)
-            .orElseThrow(() -> new RelationTypeNotFoundException("Funcionario com id " + id + " não encontrado."));
+                .orElseThrow(() -> new RelationTypeNotFoundException("Funcionario com id " + id + " não encontrado."));
 
         funcionario.setAtivo(!funcionario.isAtivo());
 
@@ -84,16 +100,18 @@ public class FuncionarioService {
 
     public void changePassword(UUID id, String senha) throws RelationTypeNotFoundException {
         Funcionario funcionario = funcionarioRepository.findById(id)
-            .orElseThrow(() -> new RelationTypeNotFoundException("Funcionario com id " + id + " não encontrado."));
+                .orElseThrow(() -> new RelationTypeNotFoundException("Funcionario com id " + id + " não encontrado."));
 
         funcionario.setSenha(passwordEncoder.encode(senha));
         funcionarioRepository.save(funcionario);
     }
 
     public ResponseEntity<?> login(LoginRequest loginRequest) {
-        Funcionario funcionario = funcionarioRepository.findByEmail(loginRequest.email());
-        if (funcionario != null && passwordEncoder.matches(loginRequest.senha(), funcionario.getSenha())) {
-            return ResponseEntity.ok("Login Successful");
+        Funcionario funcionario = funcionarioRepository.findByEmail(loginRequest.email())
+                .orElseThrow(() -> new IllegalArgumentException("Email ou senha invalidos!"));
+        if (passwordEncoder.matches(loginRequest.senha(), funcionario.getSenha())) {
+            String token = jwtUtil.generateToken(funcionario.getEmail());
+            return ResponseEntity.ok(token);
         } else {
             return ResponseEntity.status(401).body("Email ou senha invalidos!");
         }

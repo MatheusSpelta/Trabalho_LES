@@ -34,7 +34,7 @@ public class Usuario {
 
     private String telefone;
 
-    private boolean ativo;
+    private boolean ativo = true;
 
     @Temporal(TemporalType.TIMESTAMP)
     private LocalDateTime dataCriacao;
@@ -53,5 +53,5 @@ public class Usuario {
         dataCriacao = atual;
         ultimaAlteracao = atual;
     }
-    
+
 }

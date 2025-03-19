@@ -13,15 +13,13 @@ import com.example.demo.model.Cliente;
 import com.example.demo.model.Endereco;
 import com.example.demo.repository.ClienteRepository;
 
-
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.transaction.Transactional;
-
 
 @Service
 @Tag(name = "cliente", description = "Fornece serviços web REST para acesso e manipualação de Clientes.")
 public class ClienteService {
-    
+
     @Autowired
     private ClienteRepository clienteRepository;
 
@@ -32,9 +30,9 @@ public class ClienteService {
     public Cliente saveAll(ClienteDTO clienteDTO) {
         Cliente cliente = clienteDTO.cliente();
         Endereco endereco = clienteDTO.endereco();
-        
+
         validateCliente(cliente);
-        
+
         Endereco end = enderecoService.saveAll(endereco);
         cliente.setEndereco(end);
         return clienteRepository.save(cliente);
@@ -42,15 +40,14 @@ public class ClienteService {
 
     @Transactional
     public Cliente editId(UUID id, ClienteDTO clienteDTO) throws RelationTypeNotFoundException {
-    Cliente cliente = clienteDTO.cliente();
+        Cliente cliente = clienteDTO.cliente();
         Endereco endereco = clienteDTO.endereco();
 
         Cliente editado = clienteRepository.findById(id)
-            .orElseThrow(() -> new RelationTypeNotFoundException("Cliente com id " + id + " não encontrado."));
+                .orElseThrow(() -> new RelationTypeNotFoundException("Cliente com id " + id + " não encontrado."));
 
         validateCliente(cliente, id);
 
-        
         enderecoService.editId(endereco.getId(), endereco);
         editado.setEndereco(endereco);
 
@@ -71,7 +68,7 @@ public class ClienteService {
 
     public void RecargaDebito(UUID id, double valor) throws RelationTypeNotFoundException {
         Cliente cliente = clienteRepository.findById(id)
-            .orElseThrow(() -> new RelationTypeNotFoundException("Cliente com id " + id + " não encontrado."));
+                .orElseThrow(() -> new RelationTypeNotFoundException("Cliente com id " + id + " não encontrado."));
 
         cliente.setSaldoDebito(cliente.getSaldoDebito() + valor);
 
@@ -80,12 +77,12 @@ public class ClienteService {
 
     public Cliente findById(UUID id) throws RelationTypeNotFoundException {
         return clienteRepository.findById(id)
-            .orElseThrow(() -> new RelationTypeNotFoundException("Cliente com id " + id + " não encontrado."));
+                .orElseThrow(() -> new RelationTypeNotFoundException("Cliente com id " + id + " não encontrado."));
     }
 
     public void changeAtivo(UUID id) throws RelationTypeNotFoundException {
         Cliente cliente = clienteRepository.findById(id)
-            .orElseThrow(() -> new RelationTypeNotFoundException("Cliente com id " + id + " não encontrado."));
+                .orElseThrow(() -> new RelationTypeNotFoundException("Cliente com id " + id + " não encontrado."));
 
         cliente.setAtivo(!cliente.isAtivo());
         clienteRepository.save(cliente);
@@ -97,30 +94,32 @@ public class ClienteService {
 
     private void validateCliente(Cliente cliente, UUID id) {
         clienteRepository.findByMatricula(cliente.getMatricula())
-            .ifPresent(existingCliente -> {
-                if (!existingCliente.getId().equals(id)) {
-                    throw new IllegalArgumentException("Já existe um cliente com a matrícula " + cliente.getMatricula());
-                }
-            });
+                .ifPresent(existingCliente -> {
+                    if (!existingCliente.getId().equals(id)) {
+                        throw new IllegalArgumentException(
+                                "Já existe um cliente com a matrícula " + cliente.getMatricula());
+                    }
+                });
 
         clienteRepository.findByCpf(cliente.getCpf())
-            .ifPresent(existingCliente -> {
-                if (!existingCliente.getId().equals(id)) {
-                    throw new IllegalArgumentException("Já existe um cliente com o CPF " + cliente.getCpf());
-                }
-            });
+                .ifPresent(existingCliente -> {
+                    if (!existingCliente.getId().equals(id)) {
+                        throw new IllegalArgumentException("Já existe um cliente com o CPF " + cliente.getCpf());
+                    }
+                });
 
         clienteRepository.findByCartao(cliente.getCartao())
-            .ifPresent(existingCliente -> {
-                if (!existingCliente.getId().equals(id)) {
-                    throw new IllegalArgumentException("Já existe um cliente com o cartão " + cliente.getCartao());
-                }
-            });
+                .ifPresent(existingCliente -> {
+                    if (!existingCliente.getId().equals(id)) {
+                        throw new IllegalArgumentException("Já existe um cliente com o cartão " + cliente.getCartao());
+                    }
+                });
     }
 
     public Cliente findByCartao(String cartao) throws RelationTypeNotFoundException {
         return clienteRepository.findByCartao(cartao)
-            .orElseThrow(() -> new RelationTypeNotFoundException("Cliente com cartão " + cartao + " não encontrado."));
+                .orElseThrow(
+                        () -> new RelationTypeNotFoundException("Cliente com cartão " + cartao + " não encontrado."));
     }
-    
+
 }

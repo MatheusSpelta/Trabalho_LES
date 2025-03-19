@@ -16,7 +16,7 @@ import lombok.Data;
 @Data
 @Entity
 public class Produto {
-    
+
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
@@ -30,7 +30,7 @@ public class Produto {
     private double margemPromocao;
 
     private boolean isPromocao;
-    private boolean ativo;
+    private boolean ativo = true;
     private boolean isKg;
 
     @Temporal(TemporalType.TIMESTAMP)

@@ -31,8 +31,6 @@ public class EnderecoService {
         editado.setRua(endereco.getRua());
         editado.setBairro(endereco.getBairro());
         editado.setCidade(endereco.getCidade());
-        editado.setEstado(endereco.getEstado());
-        editado.setPais(endereco.getPais());
         editado.setComplemento(endereco.getComplemento());       
         editado.setNumero(endereco.getNumero());
 
