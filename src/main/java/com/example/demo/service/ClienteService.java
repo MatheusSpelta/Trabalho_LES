@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.example.demo.DTO.ClienteDTO;
+import com.example.demo.exception.ClienteException;
 import com.example.demo.model.Cliente;
 import com.example.demo.model.Endereco;
 import com.example.demo.repository.ClienteRepository;
@@ -31,7 +32,7 @@ public class ClienteService {
         Cliente cliente = clienteDTO.cliente();
         Endereco endereco = clienteDTO.endereco();
 
-        validateCliente(cliente);
+        validateCliente(cliente, null);
 
         Endereco end = enderecoService.saveAll(endereco);
         cliente.setEndereco(end);
@@ -66,60 +67,54 @@ public class ClienteService {
         return clienteRepository.findAll();
     }
 
-    public void RecargaDebito(UUID id, double valor) throws RelationTypeNotFoundException {
+    public void RecargaDebito(UUID id, double valor) {
         Cliente cliente = clienteRepository.findById(id)
-                .orElseThrow(() -> new RelationTypeNotFoundException("Cliente com id " + id + " não encontrado."));
+                .orElseThrow(ClienteException::clienteNaoEncontrado);
 
         cliente.setSaldoDebito(cliente.getSaldoDebito() + valor);
 
         clienteRepository.save(cliente);
     }
 
-    public Cliente findById(UUID id) throws RelationTypeNotFoundException {
+    public Cliente findById(UUID id) {
         return clienteRepository.findById(id)
-                .orElseThrow(() -> new RelationTypeNotFoundException("Cliente com id " + id + " não encontrado."));
+                .orElseThrow(ClienteException::clienteNaoEncontrado);
     }
 
-    public void changeAtivo(UUID id) throws RelationTypeNotFoundException {
+    public void changeAtivo(UUID id) {
         Cliente cliente = clienteRepository.findById(id)
-                .orElseThrow(() -> new RelationTypeNotFoundException("Cliente com id " + id + " não encontrado."));
+                .orElseThrow(ClienteException::clienteNaoEncontrado);
 
         cliente.setAtivo(!cliente.isAtivo());
         clienteRepository.save(cliente);
-    }
-
-    private void validateCliente(Cliente cliente) {
-        validateCliente(cliente, null);
     }
 
     private void validateCliente(Cliente cliente, UUID id) {
         clienteRepository.findByMatricula(cliente.getMatricula())
                 .ifPresent(existingCliente -> {
                     if (!existingCliente.getId().equals(id)) {
-                        throw new IllegalArgumentException(
-                                "Já existe um cliente com a matrícula " + cliente.getMatricula());
+                        throw ClienteException.matriculaJaCadastrada();
                     }
                 });
 
         clienteRepository.findByCpf(cliente.getCpf())
                 .ifPresent(existingCliente -> {
                     if (!existingCliente.getId().equals(id)) {
-                        throw new IllegalArgumentException("Já existe um cliente com o CPF " + cliente.getCpf());
+                        throw ClienteException.cpfJaCadastrado();
                     }
                 });
 
         clienteRepository.findByCartao(cliente.getCartao())
                 .ifPresent(existingCliente -> {
                     if (!existingCliente.getId().equals(id)) {
-                        throw new IllegalArgumentException("Já existe um cliente com o cartão " + cliente.getCartao());
+                        throw ClienteException.cartaoJaCadastrado();
                     }
                 });
     }
 
-    public Cliente findByCartao(String cartao) throws RelationTypeNotFoundException {
+    public Cliente findByCartao(String cartao) {
         return clienteRepository.findByCartao(cartao)
-                .orElseThrow(
-                        () -> new RelationTypeNotFoundException("Cliente com cartão " + cartao + " não encontrado."));
+                .orElseThrow(ClienteException::cartaoNaoEncontrado);
     }
 
 }

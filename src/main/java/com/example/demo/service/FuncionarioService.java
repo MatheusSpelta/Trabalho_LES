@@ -12,12 +12,18 @@ import org.springframework.stereotype.Service;
 
 import com.example.demo.DTO.FuncionarioDTO;
 import com.example.demo.DTO.LoginRequest;
+import com.example.demo.DTO.LoginResponse;
+import com.example.demo.exception.FuncionarioException;
 import com.example.demo.model.Endereco;
 import com.example.demo.model.Funcionario;
+import com.example.demo.model.InterfacePermissao;
+import com.example.demo.model.Permissao;
+import com.example.demo.model.TipoPermissao;
 import com.example.demo.repository.FuncionarioRepository;
 import com.example.demo.security.JwtUtil;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.transaction.Transactional;
 
 @Service
 @Tag(name = "Funcionario", description = "Fornece serviços web REST para acesso e manipulação de dados de Funcionarios")
@@ -35,12 +41,22 @@ public class FuncionarioService {
     @Autowired
     private JwtUtil jwtUtil;
 
+    @Autowired
+    private TipoPermissaoService tipoPermissaoService;
+
+    @Autowired
+    private PermissaoService permissaoService;
+
+    @Autowired
+    private InterfacePermissaoService interfacePermissaoService;
+
+    @Transactional
     public Funcionario saveAll(FuncionarioDTO funcionarioDTO) {
         if (funcionarioRepository.findByEmail(funcionarioDTO.funcionario().getEmail()).isPresent()) {
-            throw new IllegalArgumentException("Email já cadastrado.");
+            throw FuncionarioException.emailJaCadastrado();
         }
         if (funcionarioRepository.findByCpf(funcionarioDTO.funcionario().getCpf()).isPresent()) {
-            throw new IllegalArgumentException("CPF já cadastrado.");
+            throw FuncionarioException.cpfJaCadastrado();
         }
 
         Funcionario funcionario = funcionarioDTO.funcionario();
@@ -50,7 +66,41 @@ public class FuncionarioService {
         funcionario.setEndereco(ende);
 
         funcionario.setSenha(passwordEncoder.encode(funcionario.getSenha()));
+
+        criarPermissoesParaFuncionario(funcionario, funcionarioDTO.permissoes());
+
         return funcionarioRepository.save(funcionario);
+    }
+
+    private void criarPermissoesParaFuncionario(Funcionario funcionario, List<Permissao> permissoes) {
+        List<TipoPermissao> tiposPermissao = tipoPermissaoService.findAll();
+        List<InterfacePermissao> interfacesPermissao = interfacePermissaoService.findAll();
+
+        for (TipoPermissao tipo : tiposPermissao) {
+            for (InterfacePermissao interfacePermissao : interfacesPermissao) {
+                Permissao permissao = new Permissao();
+                permissao.setFuncionario(funcionario);
+                permissao.setTipoPermissao(tipo);
+                permissao.setInterfacePermissao(interfacePermissao);
+                permissao.setAtivo(false); // Inicialmente todas as permissões são inativas
+                permissaoService.salvar(permissao);
+            }
+        }
+        for (Permissao permissao : permissoes) {
+            permissaoService.salvar(ajustarPermissao(funcionario, permissao));
+        }
+
+    }
+
+    private Permissao ajustarPermissao(Funcionario funcionario, Permissao permissaoDTO) {
+        Permissao permissao = permissaoService.findByFuncionarioAndTipoPermissaoAndInterfacePermissao(
+                funcionario.getId(),
+                permissaoDTO.getTipoPermissao().getId(),
+                permissaoDTO.getInterfacePermissao().getId())
+                .orElseThrow(() -> new IllegalArgumentException("Permissão não encontrada para ajuste."));
+
+        permissao.setAtivo(permissaoDTO.isAtivo());
+        return permissao;
     }
 
     public Funcionario editId(UUID id, FuncionarioDTO funcionarioDTO) throws RelationTypeNotFoundException {
@@ -58,13 +108,13 @@ public class FuncionarioService {
         Endereco endereco = funcionarioDTO.endereco();
 
         Funcionario editado = funcionarioRepository.findById(id)
-                .orElseThrow(() -> new RelationTypeNotFoundException("Funcionario com id " + id + " não encontrado."));
+                .orElseThrow(FuncionarioException::funcionarioNaoEncontrado);
 
         if (funcionarioRepository.findByEmail(funcionario.getEmail()).isPresent() && !funcionario.getId().equals(id)) {
-            throw new IllegalArgumentException("Email já cadastrado.");
+            throw FuncionarioException.emailJaCadastrado();
         }
         if (funcionarioRepository.findByCpf(funcionario.getCpf()).isPresent() && !funcionario.getId().equals(id)) {
-            throw new IllegalArgumentException("CPF já cadastrado.");
+            throw FuncionarioException.cpfJaCadastrado();
         }
 
         enderecoService.editId(endereco.getId(), endereco);
@@ -77,43 +127,70 @@ public class FuncionarioService {
         editado.setEmail(funcionario.getEmail());
         editado.setSenha(passwordEncoder.encode(funcionario.getSenha()));
 
+        atualizarPermissoesDoFuncionario(editado, funcionarioDTO.permissoes());
+
         return funcionarioRepository.save(editado);
+    }
+
+    private void atualizarPermissoesDoFuncionario(Funcionario funcionario, List<Permissao> permissoesDTO) {
+        // Busca todas as permissões existentes do funcionário
+        List<Permissao> permissoesExistentes = permissaoService.findByFuncionario(funcionario.getId());
+
+        // Inicializa todas as permissões como inativas
+        for (Permissao permissao : permissoesExistentes) {
+            permissao.setAtivo(false);
+            permissaoService.salvar(permissao);
+        }
+
+        // Atualiza as permissões que estão marcadas como ativas no DTO
+        for (Permissao permissaoDTO : permissoesDTO) {
+            permissaoService.salvar(ajustarPermissao(funcionario, permissaoDTO));
+        }
     }
 
     public List<Funcionario> findAll() {
         return funcionarioRepository.findAll();
     }
 
-    public Funcionario findById(UUID id) throws RelationTypeNotFoundException {
+    public Funcionario findById(UUID id) {
         return funcionarioRepository.findById(id)
-                .orElseThrow(() -> new RelationTypeNotFoundException("Funcionario com id " + id + " não encontrado."));
+                .orElseThrow(FuncionarioException::funcionarioNaoEncontrado);
     }
 
-    public void changeAtivo(UUID id) throws RelationTypeNotFoundException {
+    public void changeAtivo(UUID id) {
         Funcionario funcionario = funcionarioRepository.findById(id)
-                .orElseThrow(() -> new RelationTypeNotFoundException("Funcionario com id " + id + " não encontrado."));
+                .orElseThrow(FuncionarioException::funcionarioNaoEncontrado);
 
         funcionario.setAtivo(!funcionario.isAtivo());
 
         funcionarioRepository.save(funcionario);
     }
 
-    public void changePassword(UUID id, String senha) throws RelationTypeNotFoundException {
+    public void changePassword(UUID id, String senha) {
         Funcionario funcionario = funcionarioRepository.findById(id)
-                .orElseThrow(() -> new RelationTypeNotFoundException("Funcionario com id " + id + " não encontrado."));
+                .orElseThrow(FuncionarioException::funcionarioNaoEncontrado);
 
         funcionario.setSenha(passwordEncoder.encode(senha));
         funcionarioRepository.save(funcionario);
     }
 
-    public ResponseEntity<?> login(LoginRequest loginRequest) {
+    public ResponseEntity<LoginResponse> login(LoginRequest loginRequest) {
+        // Busca o funcionário pelo email
         Funcionario funcionario = funcionarioRepository.findByEmail(loginRequest.email())
-                .orElseThrow(() -> new IllegalArgumentException("Email ou senha invalidos!"));
-        if (passwordEncoder.matches(loginRequest.senha(), funcionario.getSenha())) {
-            String token = jwtUtil.generateToken(funcionario.getEmail());
-            return ResponseEntity.ok(token);
-        } else {
-            return ResponseEntity.status(401).body("Email ou senha invalidos!");
+                .orElseThrow(() -> new IllegalArgumentException("Email ou senha inválidos!"));
+
+        // Verifica se a senha está correta
+        if (!passwordEncoder.matches(loginRequest.senha(), funcionario.getSenha())) {
+            return ResponseEntity.status(401).body(null);
         }
+
+        // Gera o token JWT
+        String token = jwtUtil.generateToken(funcionario.getEmail());
+
+        // Busca as permissões do funcionário
+        List<Permissao> permissoes = permissaoService.findByFuncionario(funcionario.getId());
+
+        // Retorna o token, o funcionário e as permissões no LoginResponse
+        return ResponseEntity.ok(new LoginResponse(token, funcionario, permissoes));
     }
 }

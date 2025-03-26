@@ -9,5 +9,6 @@ import com.example.demo.model.InterfacePermissao;
 
 @Repository
 public interface InterfacePermissaoRepository extends JpaRepository<InterfacePermissao, UUID> {
-    
+
+    boolean existsByDescricao(String descricao);
 }

@@ -39,7 +39,7 @@ public class Permissao {
     @JoinColumn(name = "interface_Id")
     private InterfacePermissao interfacePermissao;
 
-    private boolean ativo = true;
+    private boolean ativo;
 
     @Temporal(TemporalType.TIMESTAMP)
     private LocalDateTime dataCriacao;

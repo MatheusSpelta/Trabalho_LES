@@ -40,7 +40,7 @@ public class FornecedorController {
         return fornecedorService.saveAll(fornecedorDTO);
     }
 
-    @PutMapping("/editar")
+    @PutMapping("/editar/{id}")
     @Operation(description = "Edita um Fornecedor.", responses = {
             @ApiResponse(responseCode = "200", description = "Caso o Fornecedor seja editado com sucesso."),
             @ApiResponse(responseCode = "400", description = "Fornecedor não encontrado."),
@@ -72,7 +72,7 @@ public class FornecedorController {
             @ApiResponse(responseCode = "500", description = "Caso não tenha sido possível realizar a operação.")
     })
     public ResponseEntity<?> ativar(@PathVariable UUID id) throws RelationTypeNotFoundException {
-        try{
+        try {
             fornecedorService.changeAtivo(id);
             return ResponseEntity.ok().build();
         } catch (Exception e) {

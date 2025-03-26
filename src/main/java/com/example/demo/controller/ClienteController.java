@@ -39,7 +39,7 @@ public class ClienteController {
         return clienteService.saveAll(clienteDTO);
     }
 
-    @PutMapping("/editar")
+    @PutMapping("/editar/{id}")
     @Operation (description="Edita um Cliente.", responses = {
         @ApiResponse(responseCode = "200", description = "Caso o Cliente seja editado com sucesso."),
         @ApiResponse(responseCode = "400", description = "Cliente não encontrado."),

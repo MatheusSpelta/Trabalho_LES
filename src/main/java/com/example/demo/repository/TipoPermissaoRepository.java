@@ -9,5 +9,6 @@ import com.example.demo.model.TipoPermissao;
 
 @Repository
 public interface TipoPermissaoRepository extends JpaRepository<TipoPermissao, UUID> {
-    
+
+    boolean existsByDescricao(String descricao);
 }

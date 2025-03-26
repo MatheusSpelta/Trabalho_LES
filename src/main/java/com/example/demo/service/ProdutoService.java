@@ -8,6 +8,7 @@ import javax.management.relation.RelationTypeNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.example.demo.exception.ProdutoException;
 import com.example.demo.model.Produto;
 import com.example.demo.repository.ProdutoRepository;
 
@@ -20,12 +21,12 @@ public class ProdutoService {
     public Produto saveAll(Produto produto) {
         if (produto.getEAN() != null) {
             produtoRepository.findByEAN(produto.getEAN()).ifPresent(p -> {
-                throw new IllegalArgumentException("EAN já cadastrado");
+                throw ProdutoException.eanJaCadastrado();
             });
         }
         if (produto.getCodigo() != null) {
             produtoRepository.findByCodigo(produto.getCodigo()).ifPresent(p -> {
-                throw new IllegalArgumentException("Código já cadastrado");
+                throw ProdutoException.codigoJaCadastrado();
             });
         }
         return produtoRepository.save(produto);
@@ -33,19 +34,19 @@ public class ProdutoService {
 
     public Produto editId(UUID id, Produto produto) throws RelationTypeNotFoundException {
         Produto editado = produtoRepository.findById(id)
-                .orElseThrow(() -> new RelationTypeNotFoundException("Produto com id " + id + " não encontrado."));
+                .orElseThrow(ProdutoException::produtoNaoEncontrado);
 
         if (produto.getEAN() != null) {
             produtoRepository.findByEAN(produto.getEAN()).ifPresent(p -> {
                 if (!p.getId().equals(id)) {
-                    throw new IllegalArgumentException("EAN já cadastrado");
+                    throw ProdutoException.eanJaCadastrado();
                 }
             });
         }
         if (produto.getCodigo() != null) {
             produtoRepository.findByCodigo(produto.getCodigo()).ifPresent(p -> {
                 if (!p.getId().equals(id)) {
-                    throw new IllegalArgumentException("Código já cadastrado");
+                    throw ProdutoException.codigoJaCadastrado();
                 }
             });
         }
@@ -64,9 +65,9 @@ public class ProdutoService {
         return produtoRepository.save(editado);
     }
 
-    public Produto findById(UUID id) throws RelationTypeNotFoundException {
+    public Produto findById(UUID id) {
         return produtoRepository.findById(id)
-                .orElseThrow(() -> new RelationTypeNotFoundException("Produto com id " + id + " não encontrado."));
+                .orElseThrow(ProdutoException::produtoNaoEncontrado);
     }
 
     public List<Produto> findAll() {
@@ -77,25 +78,25 @@ public class ProdutoService {
         return produtoRepository.findByAtivoTrue();
     }
 
-    public void changeAtivo(UUID id) throws RelationTypeNotFoundException {
+    public void changeAtivo(UUID id) {
         Produto produto = produtoRepository.findById(id)
-                .orElseThrow(() -> new RelationTypeNotFoundException("Produto com id " + id + " não encontrado."));
+                .orElseThrow(ProdutoException::produtoNaoEncontrado);
 
         produto.setAtivo(!produto.isAtivo());
         produtoRepository.save(produto);
     }
 
-    public void changePromocao(UUID id) throws RelationTypeNotFoundException {
+    public void changePromocao(UUID id) {
         Produto produto = produtoRepository.findById(id)
-                .orElseThrow(() -> new RelationTypeNotFoundException("Produto com id " + id + " não encontrado."));
+                .orElseThrow(ProdutoException::produtoNaoEncontrado);
 
         produto.setPromocao(!produto.isPromocao());
         produtoRepository.save(produto);
     }
 
-    public void changeKg(UUID id) throws RelationTypeNotFoundException {
+    public void changeKg(UUID id) {
         Produto produto = produtoRepository.findById(id)
-                .orElseThrow(() -> new RelationTypeNotFoundException("Produto com id " + id + " não encontrado."));
+                .orElseThrow(ProdutoException::produtoNaoEncontrado);
 
         produto.setKg(!produto.isKg());
         produtoRepository.save(produto);

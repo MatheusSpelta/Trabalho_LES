@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.example.demo.DTO.FornecedorDTO;
+import com.example.demo.exception.FornecedorException;
 import com.example.demo.model.Endereco;
 import com.example.demo.model.Fornecedor;
 import com.example.demo.repository.FornecedorRepository;
@@ -27,7 +28,7 @@ public class FornecedorService {
 
     public Fornecedor saveAll(FornecedorDTO fornecedorDTO) {
         if (fornecedorRepository.findByCnpj(fornecedorDTO.fornecedor().getCnpj()).isPresent()) {
-            throw new IllegalArgumentException("CNPJ já cadastrado.");
+            throw FornecedorException.cnpjJaCadastrado();
         }
 
         Fornecedor fornecedor = fornecedorDTO.fornecedor();
@@ -44,10 +45,10 @@ public class FornecedorService {
         Endereco endereco = fornecedorDTO.endereco();
 
         Fornecedor editado = fornecedorRepository.findById(id)
-                .orElseThrow(() -> new RelationTypeNotFoundException("Fornecedor com id " + id + " não encontrado."));
+                .orElseThrow(FornecedorException::fornecedorNaoEncontrado);
 
         if (fornecedorRepository.findByCnpj(fornecedor.getCnpj()).isPresent() && !fornecedor.getId().equals(id)) {
-            throw new IllegalArgumentException("CNPJ já cadastrado.");
+            throw FornecedorException.cnpjJaCadastrado();
         }
 
         enderecoService.editId(endereco.getId(), endereco);
@@ -66,14 +67,14 @@ public class FornecedorService {
         return fornecedorRepository.findAll();
     }
 
-    public Fornecedor findById(UUID id) throws RelationTypeNotFoundException {
+    public Fornecedor findById(UUID id) {
         return fornecedorRepository.findById(id)
-                .orElseThrow(() -> new RelationTypeNotFoundException("Fornecedor com id " + id + " não encontrado."));
+                .orElseThrow(FornecedorException::fornecedorNaoEncontrado);
     }
 
-    public void changeAtivo(UUID id) throws RelationTypeNotFoundException {
+    public void changeAtivo(UUID id) {
         Fornecedor fornecedor = fornecedorRepository.findById(id)
-                .orElseThrow(() -> new RelationTypeNotFoundException("Fornecedor com id " + id + " não encontrado."));
+                .orElseThrow(FornecedorException::fornecedorNaoEncontrado);
 
         fornecedor.setAtivo(!fornecedor.isAtivo());
         fornecedorRepository.save(fornecedor);
