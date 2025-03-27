@@ -33,7 +33,10 @@ public class DatabaseInitializer {
             List<String> permissoes = Arrays.asList("Criar", "Editar", "Excluir", "Visualizar");
             for (String descricao : permissoes) {
                 if (!tipoPermissaoService.existsByDescricao(descricao)) {
-                    tipoPermissaoService.salvar(new TipoPermissao(descricao));
+                    TipoPermissao tipoPermissao = new TipoPermissao();
+                    tipoPermissao.setDescricao(descricao);
+                    tipoPermissao.setAtivo(true); // Exemplo de outro atributo, ajuste conforme necessário
+                    tipoPermissaoService.salvar(tipoPermissao);
                 }
             }
 
