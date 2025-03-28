@@ -29,4 +29,15 @@ public class PermissaoService {
     public List<Permissao> findByFuncionario(UUID funcionarioId) {
         return permissaoRepository.findByFuncionarioId(funcionarioId);
     }
+
+    public List<Permissao> editar(List<Permissao> permissoes) {
+        for (Permissao permissao : permissoes) {
+            if (permissao.getId() != null && permissaoRepository.existsById(permissao.getId())) {
+                permissaoRepository.save(permissao);
+            } else {
+                throw new IllegalArgumentException("Permissão com ID " + permissao.getId() + " não encontrada.");
+            }
+        }
+        return permissoes;
+    }
 }

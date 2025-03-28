@@ -25,4 +25,5 @@ public class InterfacePermissaoService {
     public List<InterfacePermissao> findAll() {
         return interfacePermissaoRepository.findAll();
     }
+
 }

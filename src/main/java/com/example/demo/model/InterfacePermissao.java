@@ -24,7 +24,6 @@ public class InterfacePermissao {
     private UUID id;
 
     private String descricao;
-    private String url;
     private boolean ativo = true;
 
     @Temporal(TemporalType.TIMESTAMP)

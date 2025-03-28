@@ -79,6 +79,8 @@ public class FuncionarioService {
         for (TipoPermissao tipo : tiposPermissao) {
             for (InterfacePermissao interfacePermissao : interfacesPermissao) {
                 Permissao permissao = new Permissao();
+                permissao.setDescricao(
+                        "Permissão para " + tipo.getDescricao() + " em " + interfacePermissao.getDescricao());
                 permissao.setFuncionario(funcionario);
                 permissao.setTipoPermissao(tipo);
                 permissao.setInterfacePermissao(interfacePermissao);
