@@ -11,12 +11,15 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.demo.DTO.FuncionarioDTO;
 import com.example.demo.model.Funcionario;
+import com.example.demo.model.Permissao;
 import com.example.demo.service.FuncionarioService;
+import com.example.demo.service.PermissaoService;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -29,6 +32,9 @@ public class FuncionarioController {
 
     @Autowired
     private final FuncionarioService funcionarioService;
+
+    @Autowired
+    private final PermissaoService permissaoService;
 
     @PostMapping("/criar")
     @Operation(description = "Cria um novo Funcionario.", responses = {
@@ -87,6 +93,20 @@ public class FuncionarioController {
     })
     public void mudarSenha(@PathVariable UUID id, @RequestBody String senha) throws RelationTypeNotFoundException {
         funcionarioService.changePassword(id, senha);
+    }
+
+    @GetMapping("/permissoes")
+    @Operation(description = "Retorna o Funcionario logado.", responses = {
+            @ApiResponse(responseCode = "200", description = "Caso o Funcionario logado seja encontrado com sucesso."),
+            @ApiResponse(responseCode = "400", description = "Funcionario não encontrado."),
+            @ApiResponse(responseCode = "500", description = "Caso não tenha sido possível realizar a operação.")
+    })
+    public List<Permissao> me(@RequestHeader("Authorization") String authorizationHeader)
+            throws RelationTypeNotFoundException {
+        String token = authorizationHeader.replace("Bearer ", "");
+        Funcionario funcionario = funcionarioService.getFuncionarioLogado(token);
+        List<Permissao> permissoes = permissaoService.findByFuncionario(funcionario.getId());
+        return permissoes;
     }
 
 }

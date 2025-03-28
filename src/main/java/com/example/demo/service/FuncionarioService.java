@@ -197,4 +197,13 @@ public class FuncionarioService {
         // Retorna o token, o funcionário e as permissões no LoginResponse
         return ResponseEntity.ok(new LoginResponse(token, funcionario, permissoes));
     }
+
+    public Funcionario getFuncionarioLogado(String token) {
+        // Extrai o nome de usuário (email) do token
+        String email = jwtUtil.extractUsername(token);
+
+        // Busca o funcionário no banco de dados pelo email
+        return funcionarioRepository.findByEmailIgnoreCase(email)
+                .orElseThrow(FuncionarioException::funcionarioNaoEncontrado); // Lança exceção se não encontrar
+    }
 }
