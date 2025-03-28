@@ -53,24 +53,28 @@ public class FuncionarioService {
 
     @Transactional
     public Funcionario saveAll(FuncionarioDTO funcionarioDTO) {
-        if (funcionarioRepository.findByEmailIgnoreCase(funcionarioDTO.funcionario().getEmail()).isPresent()) {
-            throw FuncionarioException.emailJaCadastrado();
+        try {
+            if (funcionarioRepository.findByEmailIgnoreCase(funcionarioDTO.funcionario().getEmail()).isPresent()) {
+                throw FuncionarioException.emailJaCadastrado();
+            }
+            if (funcionarioRepository.findByCpf(funcionarioDTO.funcionario().getCpf()).isPresent()) {
+                throw FuncionarioException.cpfJaCadastrado();
+            }
+
+            Funcionario funcionario = funcionarioDTO.funcionario();
+            Endereco endereco = funcionarioDTO.endereco();
+
+            Endereco ende = enderecoService.saveAll(endereco);
+            funcionario.setEndereco(ende);
+
+            funcionario.setSenha(passwordEncoder.encode(funcionario.getSenha()));
+            Funcionario funcionarioSalvo = funcionarioRepository.save(funcionario);
+            criarPermissoesParaFuncionario(funcionarioSalvo, funcionarioDTO.permissoes());
+
+            return funcionarioRepository.save(funcionarioSalvo);
+        } catch (Exception e) {
+            throw new RuntimeException("Erro ao salvar o funcionário: " + e.getMessage(), e);
         }
-        if (funcionarioRepository.findByCpf(funcionarioDTO.funcionario().getCpf()).isPresent()) {
-            throw FuncionarioException.cpfJaCadastrado();
-        }
-
-        Funcionario funcionario = funcionarioDTO.funcionario();
-        Endereco endereco = funcionarioDTO.endereco();
-
-        Endereco ende = enderecoService.saveAll(endereco);
-        funcionario.setEndereco(ende);
-
-        funcionario.setSenha(passwordEncoder.encode(funcionario.getSenha()));
-
-        criarPermissoesParaFuncionario(funcionario, funcionarioDTO.permissoes());
-
-        return funcionarioRepository.save(funcionario);
     }
 
     private void criarPermissoesParaFuncionario(Funcionario funcionario, List<Permissao> permissoes) {
