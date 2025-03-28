@@ -14,6 +14,7 @@ import com.example.demo.DTO.FuncionarioDTO;
 import com.example.demo.DTO.LoginRequest;
 import com.example.demo.DTO.LoginResponse;
 import com.example.demo.exception.FuncionarioException;
+import com.example.demo.exception.PermissaoException;
 import com.example.demo.model.Endereco;
 import com.example.demo.model.Funcionario;
 import com.example.demo.model.InterfacePermissao;
@@ -99,10 +100,10 @@ public class FuncionarioService {
                 funcionario.getId(),
                 permissaoDTO.getTipoPermissao().getId(),
                 permissaoDTO.getInterfacePermissao().getId())
-                .orElseThrow(() -> new IllegalArgumentException("Permissão não encontrada para ajuste."));
+                .orElseThrow(PermissaoException::permissaoNaoEncotnrada); // Usando PermissaoException personalizada
 
         permissao.setAtivo(permissaoDTO.isAtivo());
-        return permissao;
+        return permissaoService.editarId(permissao.getId(), permissao);
     }
 
     public Funcionario editId(UUID id, FuncionarioDTO funcionarioDTO) throws RelationTypeNotFoundException {
@@ -141,7 +142,7 @@ public class FuncionarioService {
         // Inicializa todas as permissões como inativas
         for (Permissao permissao : permissoesExistentes) {
             permissao.setAtivo(false);
-            permissaoService.salvar(permissao);
+            permissaoService.editarId(permissao.getId(), permissao);
         }
 
         // Atualiza as permissões que estão marcadas como ativas no DTO

@@ -7,9 +7,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import com.example.demo.exception.FuncionarioException;
+import com.example.demo.exception.PermissaoException;
+
 @RestControllerAdvice
 public class GlobalExceptionHandler {
-    
+
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<String> handleIllegalArgumentException(IllegalArgumentException ex) {
         return new ResponseEntity<>(ex.getMessage(), HttpStatus.BAD_REQUEST);
@@ -24,5 +27,16 @@ public class GlobalExceptionHandler {
     public ResponseEntity<String> handleException(Exception ex) {
         return new ResponseEntity<>("Ocorreu um erro inesperado. Por favor, tente novamente mais tarde.",
                 HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @ExceptionHandler(FuncionarioException.class)
+    public ResponseEntity<String> handleFuncionarioException(FuncionarioException ex) {
+        return new ResponseEntity<>(ex.getMessage(), HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(PermissaoException.class)
+    public ResponseEntity<String> handlePermissaoException(PermissaoException ex) {
+        return new ResponseEntity<>(ex.getMessage(), HttpStatus.BAD_REQUEST);
+
     }
 }

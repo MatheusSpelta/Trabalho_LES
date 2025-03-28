@@ -7,6 +7,7 @@ import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.example.demo.exception.PermissaoException;
 import com.example.demo.model.Permissao;
 import com.example.demo.repository.PermissaoRepository;
 
@@ -39,5 +40,12 @@ public class PermissaoService {
             }
         }
         return permissoes;
+    }
+
+    public Permissao editarId(UUID id, Permissao permissao) {
+        Permissao permissaoExistente = permissaoRepository.findById(id)
+                .orElseThrow(PermissaoException::permissaoNaoEncotnrada);
+        permissaoExistente.setAtivo(permissao.isAtivo());
+        return permissaoRepository.save(permissaoExistente);
     }
 }
