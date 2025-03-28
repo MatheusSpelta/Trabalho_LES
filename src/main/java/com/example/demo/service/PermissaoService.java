@@ -48,4 +48,5 @@ public class PermissaoService {
         permissaoExistente.setAtivo(permissao.isAtivo());
         return permissaoRepository.save(permissaoExistente);
     }
+
 }

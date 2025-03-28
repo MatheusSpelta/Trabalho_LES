@@ -26,65 +26,67 @@ import lombok.AllArgsConstructor;
 @RequestMapping("/api/funcionario")
 @AllArgsConstructor
 public class FuncionarioController {
-    
+
     @Autowired
     private final FuncionarioService funcionarioService;
 
     @PostMapping("/criar")
-    @Operation (description="Cria um novo Funcionario.", responses = {
-        @ApiResponse(responseCode = "200", description = "Caso o Funcionario seja criado com sucesso."),
-        @ApiResponse(responseCode = "500", description = "Caso não tenha sido possível realizar a operação.")
+    @Operation(description = "Cria um novo Funcionario.", responses = {
+            @ApiResponse(responseCode = "200", description = "Caso o Funcionario seja criado com sucesso."),
+            @ApiResponse(responseCode = "500", description = "Caso não tenha sido possível realizar a operação.")
     })
     public Funcionario criar(@RequestBody FuncionarioDTO funcionarioDTO) {
         return funcionarioService.saveAll(funcionarioDTO);
     }
 
     @PutMapping("/editar/{id}")
-    @Operation (description="Edita um Funcionario.", responses = {
-        @ApiResponse(responseCode = "200", description = "Caso o Funcionario seja editado com sucesso."),
-        @ApiResponse(responseCode = "400", description = "Funcionario não encontrado."),
-        @ApiResponse(responseCode = "500", description = "Caso não tenha sido possível realizar a operação.")
+    @Operation(description = "Edita um Funcionario.", responses = {
+            @ApiResponse(responseCode = "200", description = "Caso o Funcionario seja editado com sucesso."),
+            @ApiResponse(responseCode = "400", description = "Funcionario não encontrado."),
+            @ApiResponse(responseCode = "500", description = "Caso não tenha sido possível realizar a operação.")
     })
-    public Funcionario editar(@PathVariable UUID id, @RequestBody FuncionarioDTO funcionarioDTO) throws RelationTypeNotFoundException {
+    public Funcionario editar(@PathVariable UUID id, @RequestBody FuncionarioDTO funcionarioDTO)
+            throws RelationTypeNotFoundException {
         return funcionarioService.editId(id, funcionarioDTO);
     }
 
     @GetMapping("/listar")
-    @Operation (description="Lista todos os Funcionarios.", responses = {
-        @ApiResponse(responseCode = "200", description = "Caso os Funcionarios sejam listados com sucesso."),
-        @ApiResponse(responseCode = "500", description = "Caso não tenha sido possível realizar a operação.")
+    @Operation(description = "Lista todos os Funcionarios.", responses = {
+            @ApiResponse(responseCode = "200", description = "Caso os Funcionarios sejam listados com sucesso."),
+            @ApiResponse(responseCode = "500", description = "Caso não tenha sido possível realizar a operação.")
     })
-    public List<Funcionario> listarTodos(){
+    public List<Funcionario> listarTodos() {
         return funcionarioService.findAll();
     }
 
     @GetMapping("/buscar/{id}")
-    @Operation (description="Busca um Funcionario.", responses = {
-        @ApiResponse(responseCode = "200", description = "Caso o Funcionario seja encontrado com sucesso."),
-        @ApiResponse(responseCode = "400", description = "Funcionario não encontrado."),
-        @ApiResponse(responseCode = "500", description = "Caso não tenha sido possível realizar a operação.")
+    @Operation(description = "Busca um Funcionario.", responses = {
+            @ApiResponse(responseCode = "200", description = "Caso o Funcionario seja encontrado com sucesso."),
+            @ApiResponse(responseCode = "400", description = "Funcionario não encontrado."),
+            @ApiResponse(responseCode = "500", description = "Caso não tenha sido possível realizar a operação.")
     })
     public Funcionario buscarPorId(@PathVariable UUID id) throws RelationTypeNotFoundException {
         return funcionarioService.findById(id);
     }
 
     @PutMapping("/mudarAtivo/{id}")
-    @Operation (description="Muda o status de ativo de um Funcionario.", responses = {
-        @ApiResponse(responseCode = "200", description = "Caso o status de ativo do Funcionario seja alterado com sucesso."),
-        @ApiResponse(responseCode = "400", description = "Funcionario não encontrado."),
-        @ApiResponse(responseCode = "500", description = "Caso não tenha sido possível realizar a operação.")
+    @Operation(description = "Muda o status de ativo de um Funcionario.", responses = {
+            @ApiResponse(responseCode = "200", description = "Caso o status de ativo do Funcionario seja alterado com sucesso."),
+            @ApiResponse(responseCode = "400", description = "Funcionario não encontrado."),
+            @ApiResponse(responseCode = "500", description = "Caso não tenha sido possível realizar a operação.")
     })
     public void mudarAtivo(@PathVariable UUID id) throws RelationTypeNotFoundException {
         funcionarioService.changeAtivo(id);
     }
 
     @PutMapping("/mudarSenha/{id}")
-    @Operation (description="Muda a senha de um Funcionario.", responses = {
-        @ApiResponse(responseCode = "200", description = "Caso a senha do Funcionario seja alterada com sucesso."),
-        @ApiResponse(responseCode = "400", description = "Funcionario não encontrado."),
-        @ApiResponse(responseCode = "500", description = "Caso não tenha sido possível realizar a operação.")
+    @Operation(description = "Muda a senha de um Funcionario.", responses = {
+            @ApiResponse(responseCode = "200", description = "Caso a senha do Funcionario seja alterada com sucesso."),
+            @ApiResponse(responseCode = "400", description = "Funcionario não encontrado."),
+            @ApiResponse(responseCode = "500", description = "Caso não tenha sido possível realizar a operação.")
     })
     public void mudarSenha(@PathVariable UUID id, @RequestBody String senha) throws RelationTypeNotFoundException {
         funcionarioService.changePassword(id, senha);
     }
+
 }

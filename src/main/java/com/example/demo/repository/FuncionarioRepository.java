@@ -11,7 +11,7 @@ import com.example.demo.model.Funcionario;
 @Repository
 public interface FuncionarioRepository extends JpaRepository<Funcionario, UUID> {
 
-    Optional<Funcionario> findByEmail(String email);
+    Optional<Funcionario> findByEmailIgnoreCase(String email);
 
     Optional<Funcionario> findByCpf(String cpf);
 

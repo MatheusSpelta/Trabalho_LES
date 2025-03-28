@@ -6,9 +6,11 @@ import java.util.UUID;
 import javax.management.relation.RelationTypeNotFoundException;
 
 import org.springframework.beans.factory.annotation.Autowired;
+
 import org.springframework.stereotype.Service;
 
 import com.example.demo.model.Endereco;
+
 import com.example.demo.model.Usuario;
 import com.example.demo.repository.UsuarioRepository;
 
@@ -57,5 +59,7 @@ public class UsuarioService {
 
         usuario.setAtivo(!usuario.isAtivo());
         usuarioRepository.save(usuario);
+
     }
+
 }

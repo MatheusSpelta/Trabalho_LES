@@ -5,11 +5,7 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.UUID;
 
-import com.example.demo.Enum.FormaPagamento;
-
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -31,14 +27,23 @@ public class Venda {
 
     private double valorTotal;
 
+    private double pagamentoCredito;
+    private double pagamentoDebito;
+
     @ManyToOne
     @JoinColumn(name = "cliente_id")
     private Cliente cliente;
 
     private boolean isPago;
 
-    @Enumerated(EnumType.STRING)
-    private FormaPagamento formaPagamento;
+    // @Enumerated(EnumType.STRING)
+    // private FormaPagamento formaPagamento;
+
+    @Temporal(TemporalType.TIMESTAMP)
+    private LocalDateTime dataVenda;
+
+    @Temporal(TemporalType.TIMESTAMP)
+    private LocalDateTime dataPagamento;
 
     @Temporal(TemporalType.TIMESTAMP)
     private LocalDateTime dataCriacao;

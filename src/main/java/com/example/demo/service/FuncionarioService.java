@@ -53,7 +53,7 @@ public class FuncionarioService {
 
     @Transactional
     public Funcionario saveAll(FuncionarioDTO funcionarioDTO) {
-        if (funcionarioRepository.findByEmail(funcionarioDTO.funcionario().getEmail()).isPresent()) {
+        if (funcionarioRepository.findByEmailIgnoreCase(funcionarioDTO.funcionario().getEmail()).isPresent()) {
             throw FuncionarioException.emailJaCadastrado();
         }
         if (funcionarioRepository.findByCpf(funcionarioDTO.funcionario().getCpf()).isPresent()) {
@@ -113,7 +113,8 @@ public class FuncionarioService {
         Funcionario editado = funcionarioRepository.findById(id)
                 .orElseThrow(FuncionarioException::funcionarioNaoEncontrado);
 
-        if (funcionarioRepository.findByEmail(funcionario.getEmail()).isPresent() && !funcionario.getId().equals(id)) {
+        if (funcionarioRepository.findByEmailIgnoreCase(funcionario.getEmail()).isPresent()
+                && !funcionario.getId().equals(id)) {
             throw FuncionarioException.emailJaCadastrado();
         }
         if (funcionarioRepository.findByCpf(funcionario.getCpf()).isPresent() && !funcionario.getId().equals(id)) {
@@ -179,7 +180,7 @@ public class FuncionarioService {
 
     public ResponseEntity<LoginResponse> login(LoginRequest loginRequest) {
         // Busca o funcionário pelo email
-        Funcionario funcionario = funcionarioRepository.findByEmail(loginRequest.email())
+        Funcionario funcionario = funcionarioRepository.findByEmailIgnoreCase(loginRequest.email())
                 .orElseThrow(() -> new IllegalArgumentException("Email ou senha inválidos!"));
 
         // Verifica se a senha está correta
