@@ -111,33 +111,52 @@ public class FuncionarioService {
     }
 
     public Funcionario editId(UUID id, FuncionarioDTO funcionarioDTO) throws RelationTypeNotFoundException {
-        Funcionario funcionario = funcionarioDTO.funcionario();
-        Endereco endereco = funcionarioDTO.endereco();
+        try {
+            // Obtém o funcionário e o endereço do DTO
+            Funcionario funcionario = funcionarioDTO.funcionario();
+            Endereco endereco = funcionarioDTO.endereco();
 
-        Funcionario editado = funcionarioRepository.findById(id)
-                .orElseThrow(FuncionarioException::funcionarioNaoEncontrado);
+            // Busca o funcionário no banco de dados
+            Funcionario editado = funcionarioRepository.findById(id)
+                    .orElseThrow(FuncionarioException::funcionarioNaoEncontrado);
 
-        if (funcionarioRepository.findByEmailIgnoreCase(funcionario.getEmail()).isPresent()
-                && !funcionario.getId().equals(id)) {
-            throw FuncionarioException.emailJaCadastrado();
+            // Verifica se o email já está cadastrado para outro funcionário
+            if (funcionarioRepository.findByEmailIgnoreCase(editado.getEmail()).isPresent()
+                    && !editado.getId().equals(id)) {
+                throw FuncionarioException.emailJaCadastrado();
+            }
+
+            // Verifica se o CPF já está cadastrado para outro funcionário
+            if (funcionarioRepository.findByCpf(editado.getCpf()).isPresent() && !editado.getId().equals(id)) {
+                throw FuncionarioException.cpfJaCadastrado();
+            }
+
+            // Atualiza o endereço
+            Endereco endereco2 = enderecoService.findById(editado.getEndereco().getId());
+            enderecoService.editId(endereco2.getId(), endereco);
+            editado.setEndereco(endereco);
+
+            // Atualiza os dados do funcionário
+            editado.setNome(funcionario.getNome());
+            editado.setTelefone(funcionario.getTelefone());
+            editado.setAtivo(funcionario.isAtivo());
+            editado.setCpf(funcionario.getCpf());
+            editado.setEmail(funcionario.getEmail());
+            editado.setSenha(passwordEncoder.encode(funcionario.getSenha()));
+
+            // Atualiza as permissões do funcionário
+            atualizarPermissoesDoFuncionario(editado, funcionarioDTO.permissoes());
+
+            // Salva as alterações no banco de dados
+            return funcionarioRepository.save(editado);
+        } catch (Exception e) {
+            // Loga o erro para depuração
+            System.err.println("Erro ao editar o funcionário: " + e.getMessage());
+            e.printStackTrace();
+
+            // Relança a exceção para ser tratada em outro nível
+            throw new RuntimeException("Erro ao editar o funcionário. Verifique os dados e tente novamente.", e);
         }
-        if (funcionarioRepository.findByCpf(funcionario.getCpf()).isPresent() && !funcionario.getId().equals(id)) {
-            throw FuncionarioException.cpfJaCadastrado();
-        }
-
-        enderecoService.editId(endereco.getId(), endereco);
-        editado.setEndereco(endereco);
-
-        editado.setNome(funcionario.getNome());
-        editado.setTelefone(funcionario.getTelefone());
-        editado.setAtivo(funcionario.isAtivo());
-        editado.setCpf(funcionario.getCpf());
-        editado.setEmail(funcionario.getEmail());
-        editado.setSenha(passwordEncoder.encode(funcionario.getSenha()));
-
-        atualizarPermissoesDoFuncionario(editado, funcionarioDTO.permissoes());
-
-        return funcionarioRepository.save(editado);
     }
 
     private void atualizarPermissoesDoFuncionario(Funcionario funcionario, List<Permissao> permissoesDTO) {

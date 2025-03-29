@@ -55,6 +55,16 @@ public class FuncionarioController {
         return funcionarioService.editId(id, funcionarioDTO);
     }
 
+    @GetMapping("/editar/test")
+    @Operation(description = "Edita um Funcionario.", responses = {
+            @ApiResponse(responseCode = "200", description = "Caso o Funcionario seja editado com sucesso."),
+            @ApiResponse(responseCode = "400", description = "Funcionario não encontrado."),
+            @ApiResponse(responseCode = "500", description = "Caso não tenha sido possível realizar a operação.")
+    })
+    public FuncionarioDTO testar(@RequestBody FuncionarioDTO funcionarioDTO) {
+        return funcionarioDTO;
+    }
+
     @GetMapping("/listar")
     @Operation(description = "Lista todos os Funcionarios.", responses = {
             @ApiResponse(responseCode = "200", description = "Caso os Funcionarios sejam listados com sucesso."),

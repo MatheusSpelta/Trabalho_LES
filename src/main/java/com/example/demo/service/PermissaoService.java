@@ -43,10 +43,24 @@ public class PermissaoService {
     }
 
     public Permissao editarId(UUID id, Permissao permissao) {
-        Permissao permissaoExistente = permissaoRepository.findById(id)
-                .orElseThrow(PermissaoException::permissaoNaoEncotnrada);
-        permissaoExistente.setAtivo(permissao.isAtivo());
-        return permissaoRepository.save(permissaoExistente);
+        try {
+            // Busca a permissão existente no banco de dados
+            Permissao permissaoExistente = permissaoRepository.findById(id)
+                    .orElseThrow(PermissaoException::permissaoNaoEncotnrada);
+
+            // Atualiza os campos necessários
+            permissaoExistente.setAtivo(permissao.isAtivo());
+
+            // Salva a permissão atualizada no banco de dados
+            return permissaoRepository.save(permissaoExistente);
+        } catch (Exception e) {
+            // Loga o erro para depuração
+            System.err.println("Erro ao editar a permissão: " + e.getMessage());
+            e.printStackTrace();
+
+            // Relança a exceção para ser tratada em outro nível
+            throw new RuntimeException("Erro ao editar a permissão. Verifique os dados e tente novamente.", e);
+        }
     }
 
 }
