@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import com.example.demo.exception.FuncionarioException;
 import com.example.demo.exception.PermissaoException;
+import com.example.demo.exception.VendaException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -23,12 +24,6 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(ex.getMessage(), HttpStatus.NOT_FOUND);
     }
 
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<String> handleException(Exception ex) {
-        return new ResponseEntity<>("Ocorreu um erro inesperado. Por favor, tente novamente mais tarde.",
-                HttpStatus.INTERNAL_SERVER_ERROR);
-    }
-
     @ExceptionHandler(FuncionarioException.class)
     public ResponseEntity<String> handleFuncionarioException(FuncionarioException ex) {
         return new ResponseEntity<>(ex.getMessage(), HttpStatus.BAD_REQUEST);
@@ -38,5 +33,10 @@ public class GlobalExceptionHandler {
     public ResponseEntity<String> handlePermissaoException(PermissaoException ex) {
         return new ResponseEntity<>(ex.getMessage(), HttpStatus.BAD_REQUEST);
 
+    }
+
+    @ExceptionHandler(VendaException.class)
+    public ResponseEntity<String> handleVendaException(VendaException ex) {
+        return new ResponseEntity<>(ex.getMessage(), HttpStatus.BAD_REQUEST);
     }
 }

@@ -8,14 +8,19 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import com.example.demo.DTO.ClienteDTO;
 import com.example.demo.DTO.FuncionarioDTO;
+import com.example.demo.model.Cliente;
 import com.example.demo.model.Endereco;
 import com.example.demo.model.Funcionario;
 import com.example.demo.model.InterfacePermissao;
+import com.example.demo.model.Produto;
 import com.example.demo.model.TipoPermissao;
+import com.example.demo.service.ClienteService;
 import com.example.demo.service.EnderecoService;
 import com.example.demo.service.FuncionarioService;
 import com.example.demo.service.InterfacePermissaoService;
+import com.example.demo.service.ProdutoService;
 import com.example.demo.service.TipoPermissaoService;
 
 @Configuration
@@ -27,6 +32,8 @@ public class DatabaseInitializer {
             InterfacePermissaoService interfacePermissaoService,
             FuncionarioService funcionarioService,
             EnderecoService enderecoService,
+            ClienteService clienteService,
+            ProdutoService produtoService,
             PasswordEncoder passwordEncoder) {
         return args -> {
             // Inicializa permissões
@@ -69,6 +76,52 @@ public class DatabaseInitializer {
 
                 // Usa o método saveAll do FuncionarioService
                 funcionarioService.saveAll(new FuncionarioDTO(funcionario, endereco, List.of()));
+            }
+            // Cria um cliente padrão
+            if (clienteService.findAll().isEmpty()) {
+                Endereco enderecoCliente = new Endereco();
+                enderecoCliente.setRua("Rua Cliente");
+                enderecoCliente.setNumero("456");
+                enderecoCliente.setCidade("Cidade Cliente");
+                enderecoCliente.setBairro("Bairro Cliente");
+                enderecoCliente.setCep("11111-111");
+
+                Cliente cliente = new Cliente();
+                cliente.setNome("Cliente Teste");
+                cliente.setCpf("123.456.789-00");
+                cliente.setCartao("1234567890123456");
+                cliente.setSaldoDebito(500.0);
+                cliente.setLimiteCredito(1000.0);
+                cliente.setTelefone("11999999999");
+                cliente.setEndereco(enderecoCliente);
+
+                // Usa o método saveAll do ClienteService
+                clienteService.saveAll(new ClienteDTO(cliente, enderecoCliente));
+            }
+
+            // Cria dois produtos padrão
+            if (produtoService.findAll().isEmpty()) {
+                Produto produto1 = new Produto();
+                produto1.setDescricao("Produto 1");
+                produto1.setEAN("1111111111111");
+                produto1.setCodigo("P001");
+                produto1.setValorVenda(50.0);
+                produto1.setValorCusto(30.0);
+                produto1.setMargemLucro(20.0);
+                produto1.setAtivo(true);
+
+                Produto produto2 = new Produto();
+                produto2.setDescricao("Produto 2");
+                produto2.setEAN("2222222222222");
+                produto2.setCodigo("P002");
+                produto2.setValorVenda(100.0);
+                produto2.setValorCusto(70.0);
+                produto2.setMargemLucro(30.0);
+                produto2.setAtivo(true);
+
+                // Salva os produtos
+                produtoService.saveAll(produto1);
+                produtoService.saveAll(produto2);
             }
         };
     }
