@@ -36,6 +36,8 @@ public class Venda {
 
     private boolean isPago;
 
+    private boolean ativo = true;
+
     // @Enumerated(EnumType.STRING)
     // private FormaPagamento formaPagamento;
 

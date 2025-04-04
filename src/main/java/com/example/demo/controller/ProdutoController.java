@@ -105,4 +105,14 @@ public class ProdutoController {
     public void mudarKg(@PathVariable UUID id) throws RelationTypeNotFoundException {
         produtoService.changeKg(id);
     }
+
+    @GetMapping("/buscar/ean/{ean}")
+    @Operation(description = "Busca um Produto pelo EAN.", responses = {
+            @ApiResponse(responseCode = "200", description = "Caso o Produto seja encontrado com sucesso."),
+            @ApiResponse(responseCode = "400", description = "Produto não encontrado."),
+            @ApiResponse(responseCode = "500", description = "Caso não tenha sido possível realizar a operação.")
+    })
+    public Produto buscarPorEan(@PathVariable String ean) throws RelationTypeNotFoundException {
+        return produtoService.findByEan(ean);
+    }
 }

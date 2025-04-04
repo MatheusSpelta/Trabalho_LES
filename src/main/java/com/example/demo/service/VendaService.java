@@ -1,12 +1,15 @@
 package com.example.demo.service;
 
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.example.demo.DTO.ProdutosDTO;
 import com.example.demo.DTO.VendaDTO;
+import com.example.demo.DTO.VendaResponseDTO;
 import com.example.demo.exception.ClienteException;
 import com.example.demo.exception.VendaException;
 import com.example.demo.model.Cliente;
@@ -90,4 +93,115 @@ public class VendaService {
 
         return venda;
     }
+
+    @Transactional
+    public Venda editarVenda(UUID id, VendaDTO vendaDTO) {
+        // Buscar a venda existente
+        Venda vendaExistente = vendaRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Venda com id " + id + " não encontrada."));
+
+        // Buscar o cliente associado à venda
+        Cliente cliente = vendaExistente.getCliente();
+
+        // Reverter os valores de débito e crédito do cliente
+        cliente.setSaldoDebito(cliente.getSaldoDebito() + vendaExistente.getPagamentoDebito());
+        cliente.setLimiteCredito(cliente.getLimiteCredito() + vendaExistente.getPagamentoCredito());
+
+        // Calcular o novo valor total da venda
+        double novoValorTotal = vendaDTO.produtos().stream().mapToDouble(ProdutosDTO::valorTotal).sum();
+
+        double valorRestante = novoValorTotal;
+        double novoValorDebitoUtilizado = 0;
+        double novoValorCreditoUtilizado = 0;
+
+        // Subtrair o novo valor do saldo de débito
+        if (cliente.getSaldoDebito() >= valorRestante) {
+            novoValorDebitoUtilizado = valorRestante;
+            cliente.setSaldoDebito(cliente.getSaldoDebito() - novoValorDebitoUtilizado);
+            valorRestante -= novoValorDebitoUtilizado;
+        } else {
+            novoValorDebitoUtilizado = cliente.getSaldoDebito();
+            cliente.setSaldoDebito(0);
+            valorRestante -= novoValorDebitoUtilizado;
+        }
+
+        // Subtrair o novo valor do saldo de crédito
+        if (valorRestante > 0) {
+            if (cliente.getLimiteCredito() >= valorRestante) {
+                novoValorCreditoUtilizado = valorRestante;
+                cliente.setLimiteCredito(cliente.getLimiteCredito() - novoValorCreditoUtilizado);
+                valorRestante -= novoValorCreditoUtilizado;
+            } else {
+                throw VendaException.saldoInsuficiente();
+            }
+        }
+
+        // Atualizar os dados da venda
+        vendaExistente.setValorTotal(novoValorTotal);
+        vendaExistente.setPagamentoDebito(novoValorDebitoUtilizado);
+        vendaExistente.setPagamentoCredito(novoValorCreditoUtilizado);
+        vendaExistente.setPago(novoValorCreditoUtilizado == 0);
+        vendaExistente.setDataVenda(LocalDateTime.now());
+
+        // Atualizar os produtos da venda
+        List<VendaProduto> produtosAtuais = vendaProdutoService.findByVendaId(vendaExistente.getId(), true);
+
+        // Marcar todos os produtos atuais como inativos
+        produtosAtuais.forEach(produto -> produto.setAtivo(false));
+
+        // Atualizar ou criar novos registros de produtos
+        for (ProdutosDTO produtoDTO : vendaDTO.produtos()) {
+            VendaProduto vendaProdutoExistente = produtosAtuais.stream()
+                    .filter(produto -> produto.getProduto().getId().equals(produtoDTO.produto().getId()))
+                    .findFirst()
+                    .orElse(null);
+
+            if (vendaProdutoExistente != null) {
+                // Produto já existe, apenas atualiza os valores e reativa
+                vendaProdutoExistente.setQuantidade(produtoDTO.quantidade());
+                vendaProdutoExistente.setValorUnitario(produtoDTO.produto().getValorVenda());
+                vendaProdutoExistente.setValorTotal(produtoDTO.valorTotal());
+                vendaProdutoExistente.setAtivo(true);
+            } else {
+                // Produto não existe, cria um novo registro
+                VendaProduto novoVendaProduto = new VendaProduto();
+                novoVendaProduto.setVenda(vendaExistente);
+                novoVendaProduto.setProduto(produtoDTO.produto());
+                novoVendaProduto.setQuantidade(produtoDTO.quantidade());
+                novoVendaProduto.setValorUnitario(produtoDTO.produto().getValorVenda());
+                novoVendaProduto.setValorTotal(produtoDTO.valorTotal());
+                novoVendaProduto.setAtivo(true);
+                vendaProdutoService.salvar(novoVendaProduto);
+            }
+        }
+
+        // Salvar os produtos atualizados
+        produtosAtuais.forEach(vendaProdutoService::salvar);
+
+        // Salvar a venda atualizada
+        return vendaRepository.save(vendaExistente);
+    }
+
+    public List<VendaResponseDTO> listarVendasPorCartaoCliente(String codigoCartao, boolean ativo) {
+        Cliente cliente = clienteService.findByCartao(codigoCartao);
+        if (cliente == null) {
+            throw ClienteException.clienteNaoEncontrado();
+        }
+
+        List<Venda> vendas = vendaRepository.findByClienteId(cliente.getId());
+        return vendas.stream().map(venda -> {
+            List<VendaProduto> produtos = vendaProdutoService.findByVendaId(venda.getId(), ativo);
+            return new VendaResponseDTO(venda, produtos);
+        }).toList();
+    }
+
+    public List<VendaResponseDTO> listarVendasPorClienteId(UUID clienteId, boolean ativo) {
+        List<Venda> vendas = vendaRepository.findByClienteId(clienteId);
+        return vendas.stream()
+                .map(venda -> {
+                    List<VendaProduto> produtos = vendaProdutoService.findByVendaId(venda.getId(), ativo);
+                    return new VendaResponseDTO(venda, produtos);
+                }).toList();
+    }
+
 }

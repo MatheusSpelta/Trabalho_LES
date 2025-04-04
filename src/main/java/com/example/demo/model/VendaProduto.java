@@ -35,6 +35,7 @@ public class VendaProduto {
     private double quantidade;
     private double valorUnitario;
     private double valorTotal;
+    private boolean ativo = true;
 
     @Temporal(TemporalType.TIMESTAMP)
     private LocalDateTime dataCriacao;

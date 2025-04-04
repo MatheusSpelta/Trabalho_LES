@@ -101,4 +101,9 @@ public class ProdutoService {
         produto.setKg(!produto.isKg());
         produtoRepository.save(produto);
     }
+
+    public Produto findByEan(String ean) {
+        return produtoRepository.findByEAN(ean)
+                .orElseThrow(ProdutoException::produtoNaoEncontrado);
+    }
 }
