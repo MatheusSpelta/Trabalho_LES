@@ -195,13 +195,51 @@ public class VendaService {
         }).toList();
     }
 
-    public List<VendaResponseDTO> listarVendasPorClienteId(UUID clienteId, boolean ativo) {
+    public List<VendaResponseDTO> listarTodasVendasPorCartaoCliente(String codigoCartao) {
+        Cliente cliente = clienteService.findByCartao(codigoCartao);
+        if (cliente == null) {
+            throw ClienteException.clienteNaoEncontrado();
+        }
+
+        List<Venda> vendas = vendaRepository.findByClienteId(cliente.getId());
+        return vendas.stream().map(venda -> {
+            List<VendaProduto> produtos = vendaProdutoService.findByVendaId(venda.getId());
+            return new VendaResponseDTO(venda, produtos);
+        }).toList();
+    }
+
+    public List<VendaResponseDTO> listarTodasVendasPorClienteId(UUID clienteId) {
+        Cliente cliente = clienteService.findById(clienteId);
+        if (cliente == null) {
+            throw ClienteException.clienteNaoEncontrado();
+        }
+
+        List<Venda> vendas = vendaRepository.findByClienteId(cliente.getId());
+        return vendas.stream().map(venda -> {
+            List<VendaProduto> produtos = vendaProdutoService.findByVendaId(venda.getId());
+            return new VendaResponseDTO(venda, produtos);
+        }).toList();
+    }
+
+    public List<VendaResponseDTO> listarVendasPorClienteId(UUID clienteId) {
         List<Venda> vendas = vendaRepository.findByClienteId(clienteId);
         return vendas.stream()
                 .map(venda -> {
-                    List<VendaProduto> produtos = vendaProdutoService.findByVendaId(venda.getId(), ativo);
+                    List<VendaProduto> produtos = vendaProdutoService.findByVendaId(venda.getId());
                     return new VendaResponseDTO(venda, produtos);
                 }).toList();
+    }
+
+    public VendaResponseDTO findVendaById(UUID vendaId) {
+        // Buscar a venda pelo ID
+        Venda venda = vendaRepository.findById(vendaId)
+                .orElseThrow(() -> new RuntimeException("Venda com id " + vendaId + " não encontrada."));
+
+        // Buscar os produtos associados à venda
+        List<VendaProduto> produtos = vendaProdutoService.findByVendaId(vendaId, true);
+
+        // Retornar a venda e seus produtos no DTO de resposta
+        return new VendaResponseDTO(venda, produtos);
     }
 
 }

@@ -23,7 +23,11 @@ public class VendaProdutoService {
         vendaProdutoRepository.deleteByVendaId(vendaId);
     }
 
-    public List<VendaProduto> findByVendaId(UUID vendaId, boolean ativo){
+    public List<VendaProduto> findByVendaId(UUID vendaId, boolean ativo) {
         return vendaProdutoRepository.findByVendaIdAndAtivo(vendaId, ativo);
+    }
+
+    public List<VendaProduto> findByVendaId(UUID vendaId) {
+        return vendaProdutoRepository.findByVendaId(vendaId);
     }
 }

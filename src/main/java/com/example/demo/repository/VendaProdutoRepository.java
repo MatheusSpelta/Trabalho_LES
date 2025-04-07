@@ -20,4 +20,6 @@ public interface VendaProdutoRepository extends JpaRepository<VendaProduto, UUID
 
     List<VendaProduto> findByVendaIdAndAtivo(UUID vendaId, boolean ativo);
 
+    List<VendaProduto> findByVendaId(UUID vendaId);
+
 }

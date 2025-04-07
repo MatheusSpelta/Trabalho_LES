@@ -1,5 +1,6 @@
 package com.example.demo.controller;
 
+import java.util.List;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.demo.DTO.VendaDTO;
+import com.example.demo.DTO.VendaResponseDTO;
 import com.example.demo.model.Venda;
 import com.example.demo.service.VendaService;
 
@@ -42,9 +44,44 @@ public class VendaController {
             @ApiResponse(responseCode = "400", description = "Venda não encontrada."),
             @ApiResponse(responseCode = "500", description = "Caso não tenha sido possível realizar a operação.")
     })
-    public Venda editarVenda(@PathVariable UUID id,@RequestBody VendaDTO vendaDTO) {
+    public Venda editarVenda(@PathVariable UUID id, @RequestBody VendaDTO vendaDTO) {
         return vendaService.editarVenda(id, vendaDTO);
     }
 
+    @GetMapping("/listar/vendasAtivas/clienteCartao/{cartao}")
+    @Operation(description = "Lista todas as vendas ATIVAS de um cliente baseados no cartão.", responses = {
+            @ApiResponse(responseCode = "200", description = "Caso as vendas sejam listadas com sucesso."),
+            @ApiResponse(responseCode = "500", description = "Caso não tenha sido possível realizar a operação.")
+    })
+    public List<VendaResponseDTO> listarVendasPorCliente(@PathVariable String cartao) {
+        return vendaService.listarVendasPorCartaoCliente(cartao, true);
+    }
+
+    @GetMapping("/listar/todas/vendas/clienteCartao/{cartao}")
+    @Operation(description = "Lista todas as vendas de um cliente baseadas no cartão.", responses = {
+            @ApiResponse(responseCode = "200", description = "Caso as vendas sejam listadas com sucesso."),
+            @ApiResponse(responseCode = "500", description = "Caso não tenha sido possível realizar a operação.")
+    })
+    public List<VendaResponseDTO> listarTodasVendasPorCliente(@PathVariable String cartao) {
+        return vendaService.listarTodasVendasPorCartaoCliente(cartao);
+    }
+
+    @GetMapping("/listar/vendas/cliente/{id}")
+    @Operation(description = "Lista todas as vendas de um cliente baseadas no ID.", responses = {
+            @ApiResponse(responseCode = "200", description = "Caso as vendas sejam listadas com sucesso."),
+            @ApiResponse(responseCode = "500", description = "Caso não tenha sido possível realizar a operação.")
+    })
+    public List<VendaResponseDTO> listarVendasPorClienteId(@PathVariable UUID id) {
+        return vendaService.listarVendasPorClienteId(id);
+    }
+
     @GetMapping("/buscar/{id}")
+    @Operation(description = "Retorna uma venda e seus produtos com base no ID da venda.", responses = {
+            @ApiResponse(responseCode = "200", description = "Caso a venda seja encontrada com sucesso."),
+            @ApiResponse(responseCode = "400", description = "Venda não encontrada."),
+            @ApiResponse(responseCode = "500", description = "Caso não tenha sido possível realizar a operação.")
+    })
+    public VendaResponseDTO buscarVendaPorId(@PathVariable UUID id) {
+        return vendaService.findVendaById(id);
+    }
 }
