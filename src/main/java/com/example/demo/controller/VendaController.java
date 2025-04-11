@@ -84,4 +84,13 @@ public class VendaController {
     public VendaResponseDTO buscarVendaPorId(@PathVariable UUID id) {
         return vendaService.findVendaById(id);
     }
+
+    @GetMapping("/listar/todas")
+    @Operation(description = "Lista todas as vendas.", responses = {
+            @ApiResponse(responseCode = "200", description = "Caso as vendas sejam listadas com sucesso."),
+            @ApiResponse(responseCode = "500", description = "Caso não tenha sido possível realizar a operação.")
+    })
+    public List<Venda> listarTodasVendas() {
+        return vendaService.listAll();
+    }
 }

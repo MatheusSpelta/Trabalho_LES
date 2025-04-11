@@ -242,4 +242,7 @@ public class VendaService {
         return new VendaResponseDTO(venda, produtos);
     }
 
+    public List<Venda> listAll() {
+        return vendaRepository.findAll();
+    }
 }
