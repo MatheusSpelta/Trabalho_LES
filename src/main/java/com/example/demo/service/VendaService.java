@@ -1,5 +1,6 @@
 package com.example.demo.service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -244,5 +245,9 @@ public class VendaService {
 
     public List<Venda> listAll() {
         return vendaRepository.findAll();
+    }
+
+    public List<Cliente> findClientesAtendidos(LocalDate data){
+        return vendaRepository.findClientesAtendidosPorDia(data);
     }
 }

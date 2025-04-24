@@ -7,14 +7,14 @@ import com.example.demo.tcp.TcpServer;
 
 import jakarta.annotation.PostConstruct;
 
-@Component
-public class TcpServerInitializer {
+//@Component
+//public class TcpServerInitializer {
 
-    @Autowired
-    private TcpServer tcpServer;
+//    @Autowired
+//    private TcpServer tcpServer;
 
-    @PostConstruct
-    public void init() {
-        tcpServer.iniciar();
-    }
-}
+//    @PostConstruct
+//    public void init() {
+//        tcpServer.iniciar();
+//    }
+//}

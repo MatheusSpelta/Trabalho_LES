@@ -1,12 +1,16 @@
 package com.example.demo.DTO.Relatorios;
 
+import com.example.demo.DTO.VendaResponseDTO;
 import com.example.demo.model.Cliente;
-import com.example.demo.model.Venda;
 
 import java.util.List;
 
-public class ClienteRelatorioDTO {
-    Cliente cliente;
-    List<Venda> vendas;
-
+public record ClienteRelatorioDTO(
+        Cliente cliente,
+        List<VendaResponseDTO> vendas,
+        double total,
+        double totalCredito,
+        double totalDebito
+) {
 }
+

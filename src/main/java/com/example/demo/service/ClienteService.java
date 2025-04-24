@@ -1,21 +1,19 @@
 package com.example.demo.service;
 
-import java.util.List;
-import java.util.UUID;
-
-import javax.management.relation.RelationTypeNotFoundException;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 import com.example.demo.DTO.ClienteDTO;
 import com.example.demo.exception.ClienteException;
 import com.example.demo.model.Cliente;
 import com.example.demo.model.Endereco;
 import com.example.demo.repository.ClienteRepository;
-
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.transaction.Transactional;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import javax.management.relation.RelationTypeNotFoundException;
+import java.time.LocalDate;
+import java.util.List;
+import java.util.UUID;
 
 @Service
 @Tag(name = "cliente", description = "Fornece serviços web REST para acesso e manipualação de Clientes.")
@@ -115,6 +113,11 @@ public class ClienteService {
     public Cliente findByCartao(String cartao) {
         return clienteRepository.findByCartao(cartao)
                 .orElseThrow(ClienteException::cartaoNaoEncontrado);
+    }
+
+    public List<Cliente> findClientesAniversariantesHoje() {
+        LocalDate hoje = LocalDate.now();
+        return clienteRepository.findClientesAniversariantes(hoje.getMonthValue(), hoje.getDayOfMonth());
     }
 
 }
