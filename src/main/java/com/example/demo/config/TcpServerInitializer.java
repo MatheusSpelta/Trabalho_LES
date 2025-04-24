@@ -15,6 +15,6 @@ public class TcpServerInitializer {
 
     @PostConstruct
     public void init() {
-        tcpServer.startServer();
+        tcpServer.iniciar();
     }
 }
