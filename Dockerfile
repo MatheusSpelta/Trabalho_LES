@@ -4,7 +4,7 @@ FROM maven:3.8.5-openjdk-17 AS build
 WORKDIR /app
 
 # Copie o arquivo pom.xml e baixe as dependências
-COPY pom.xml .
+COPY pom.xml . 
 RUN mvn dependency:go-offline -B
 
 # Copie o código-fonte e construa o projeto
