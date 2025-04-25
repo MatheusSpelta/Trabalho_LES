@@ -6,6 +6,7 @@ import com.example.demo.DTO.VendaResponseDTO;
 import com.example.demo.exception.ClienteException;
 import com.example.demo.exception.VendaException;
 import com.example.demo.model.Cliente;
+import com.example.demo.model.Produto;
 import com.example.demo.model.Venda;
 import com.example.demo.model.VendaProduto;
 import com.example.demo.repository.VendaRepository;
@@ -15,6 +16,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -25,6 +27,7 @@ public class VendaService {
     private final ClienteService clienteService;
     private final VendaRepository vendaRepository;
     private final VendaProdutoService vendaProdutoService;
+    private final ImpressoraTermicaService impressoraTermicaService;
 
     @Transactional
     public Venda realizarVenda(VendaDTO vendaDTO) {
@@ -74,18 +77,30 @@ public class VendaService {
         venda = vendaRepository.save(venda);
 
         // Registrar os produtos vendidos
+
+        List<VendaProduto> vendaProdutos = new ArrayList<>();
         for (ProdutosDTO produtoDTO : vendaDTO.produtos()) {
+            Produto produto = produtoDTO.produto();
             VendaProduto vendaProduto = new VendaProduto();
             vendaProduto.setVenda(venda);
-            vendaProduto.setProduto(produtoDTO.produto());
+            vendaProduto.setProduto(produto);
             vendaProduto.setQuantidade(produtoDTO.quantidade());
-            vendaProduto.setValorUnitario(produtoDTO.produto().getValorVenda());
+            vendaProduto.setValorUnitario(produto.getValorVenda());
             vendaProduto.setValorTotal(produtoDTO.valorTotal());
-            vendaProduto.setProduto(produtoDTO.produto());
 
             vendaProdutoService.salvar(vendaProduto);
+            vendaProdutos.add(vendaProduto);
         }
 
+        impressoraTermicaService.imprimirRecibo(
+                cliente,
+                vendaProdutos,
+                venda.getValorTotal(),
+                venda.getPagamentoCredito(),
+                venda.getPagamentoDebito(),
+                cliente.getSaldoDebito(),
+                cliente.getLimiteCredito()
+        );
         return venda;
     }
 
@@ -243,5 +258,25 @@ public class VendaService {
 
     public List<Cliente> findClientesAtendidos(LocalDate data) {
         return vendaRepository.findClientesAtendidosPorDia(data);
+    }
+
+    public void reimprimirVenda(UUID vendaId) {
+        Venda venda = vendaRepository.findById(vendaId)
+                .orElseThrow(() -> new RuntimeException("Venda com id " + vendaId + " não encontrada."));
+
+        List<VendaProduto> produtos = vendaProdutoService.findByVendaId(vendaId);
+
+        Cliente cliente = venda.getCliente();
+
+        // Passar saldo em débito e limite de crédito disponível
+        impressoraTermicaService.imprimirRecibo(
+                cliente,
+                produtos,
+                venda.getValorTotal(),
+                venda.getPagamentoCredito(),
+                venda.getPagamentoDebito(),
+                cliente.getSaldoDebito(),
+                cliente.getLimiteCredito()
+        );
     }
 }
