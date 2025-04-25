@@ -92,15 +92,15 @@ public class VendaService {
             vendaProdutos.add(vendaProduto);
         }
 
-        impressoraTermicaService.imprimirRecibo(
-                cliente,
-                vendaProdutos,
-                venda.getValorTotal(),
-                venda.getPagamentoCredito(),
-                venda.getPagamentoDebito(),
-                cliente.getSaldoDebito(),
-                cliente.getLimiteCredito()
-        );
+//        impressoraTermicaService.imprimirRecibo(
+//                cliente,
+//                vendaProdutos,
+//                venda.getValorTotal(),
+//                venda.getPagamentoCredito(),
+//                venda.getPagamentoDebito(),
+//                cliente.getSaldoDebito(),
+//                cliente.getLimiteCredito()
+//        );
         return venda;
     }
 
