@@ -1,22 +1,12 @@
 package com.example.demo.model;
 
+import jakarta.persistence.*;
+import lombok.Data;
+
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
-import java.util.Date;
 import java.util.UUID;
-
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.PrePersist;
-import jakarta.persistence.PreUpdate;
-import jakarta.persistence.Temporal;
-import jakarta.persistence.TemporalType;
-import lombok.Data;
 
 @Data
 @Entity
@@ -33,11 +23,11 @@ public class Compra {
     private String codigo;
     private String descricao;
     private double valorTotal;
-    private Date dataCompra;
-    private Date dataVencimento;
+    private LocalDateTime dataCompra;
+    private LocalDateTime dataVencimento;
 
     private boolean isPago;
-    private Date dataPagamento;
+    private LocalDateTime dataPagamento;
     private boolean ativo = true;
 
     @Temporal(TemporalType.TIMESTAMP)

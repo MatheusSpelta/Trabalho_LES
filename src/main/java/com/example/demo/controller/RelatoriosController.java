@@ -1,8 +1,6 @@
 package com.example.demo.controller;
 
-import com.example.demo.DTO.Relatorios.ClienteRelatorioDetalhadoDTO;
-import com.example.demo.DTO.Relatorios.ClienteTicketMedioDTO;
-import com.example.demo.DTO.Relatorios.DataRequestDTO;
+import com.example.demo.DTO.Relatorios.*;
 import com.example.demo.model.Cliente;
 import com.example.demo.service.RelatorioService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -11,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/relatorio")
@@ -42,4 +41,35 @@ class RelatoriosController {
     public List<Cliente> relatorioDiario(@RequestBody LocalDate data) {
         return relatoriosService.clientesAtendidosPorDia(data);
     }
+
+    @GetMapping("/vendas-cliente/{clienteId}")
+    @Operation(description = "Retorna as vendas de um cliente expecifico.")
+    public ClienteRelatorioDTO vendasPorCliente(@PathVariable UUID clienteId) {
+        return relatoriosService.obterVendasPorCliente(clienteId);
+    }
+
+    @GetMapping("/vendas-diaria")
+    @Operation(description = "Retorna o total de vendas do dia.")
+    public RelatorioTotalDTO vendasDiaria(@RequestBody LocalDate data) {
+        return relatoriosService.obterVendasDiaria(data);
+    }
+
+    @PostMapping("/relatorio-produtos")
+    @Operation(description = "Retorna o relatorio de produtos vendidos de um periodo expecifico")
+    public List<ProdutoRelatorioDTO> relatorioProdutos(@RequestBody DataRequestDTO request) {
+        return relatoriosService.obterRelatorioVendasPorProduto(request.getDataInicio(), request.getDataFim());
+    }
+
+    @GetMapping("/relatorio-compras")
+    @Operation(description = "Retorna o relatorio de compras de um periodo expecifico")
+    public RelatorioCompraDTO relatorioCompras(@RequestBody DataRequestDTO request) {
+        return relatoriosService.obterRelatorioCompras(request.getDataInicio(), request.getDataFim());
+    }
+
+    @GetMapping("/dre")
+    @Operation(description = "Retorna o DRE de um periodo expecifico")
+    public DreDiarioDTO relatorioDRE(@RequestBody DataRequestDTO request) {
+        return relatoriosService.gerarDreDiario(request.getDataInicio(), request.getDataFim());
+    }
 }
+

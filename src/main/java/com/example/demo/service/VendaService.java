@@ -1,13 +1,5 @@
 package com.example.demo.service;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.UUID;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 import com.example.demo.DTO.ProdutosDTO;
 import com.example.demo.DTO.VendaDTO;
 import com.example.demo.DTO.VendaResponseDTO;
@@ -17,20 +9,22 @@ import com.example.demo.model.Cliente;
 import com.example.demo.model.Venda;
 import com.example.demo.model.VendaProduto;
 import com.example.demo.repository.VendaRepository;
-
 import jakarta.transaction.Transactional;
+import lombok.AllArgsConstructor;
+import org.springframework.stereotype.Service;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.UUID;
 
 @Service
+@AllArgsConstructor
 public class VendaService {
 
-    @Autowired
-    private ClienteService clienteService;
-
-    @Autowired
-    private VendaRepository vendaRepository;
-
-    @Autowired
-    private VendaProdutoService vendaProdutoService;
+    private final ClienteService clienteService;
+    private final VendaRepository vendaRepository;
+    private final VendaProdutoService vendaProdutoService;
 
     @Transactional
     public Venda realizarVenda(VendaDTO vendaDTO) {
@@ -247,7 +241,7 @@ public class VendaService {
         return vendaRepository.findAll();
     }
 
-    public List<Cliente> findClientesAtendidos(LocalDate data){
+    public List<Cliente> findClientesAtendidos(LocalDate data) {
         return vendaRepository.findClientesAtendidosPorDia(data);
     }
 }

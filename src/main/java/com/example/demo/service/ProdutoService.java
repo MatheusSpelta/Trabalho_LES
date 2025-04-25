@@ -1,22 +1,20 @@
 package com.example.demo.service;
 
-import java.util.List;
-import java.util.UUID;
-
-import javax.management.relation.RelationTypeNotFoundException;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 import com.example.demo.exception.ProdutoException;
 import com.example.demo.model.Produto;
 import com.example.demo.repository.ProdutoRepository;
+import lombok.AllArgsConstructor;
+import org.springframework.stereotype.Service;
+
+import javax.management.relation.RelationTypeNotFoundException;
+import java.util.List;
+import java.util.UUID;
 
 @Service
+@AllArgsConstructor
 public class ProdutoService {
 
-    @Autowired
-    private ProdutoRepository produtoRepository;
+    private final ProdutoRepository produtoRepository;
 
     public Produto saveAll(Produto produto) {
         if (produto.getEAN() != null) {
@@ -55,10 +53,7 @@ public class ProdutoService {
         editado.setEAN(produto.getEAN());
         editado.setValorVenda(produto.getValorVenda());
         editado.setValorCusto(produto.getValorCusto());
-        editado.setMargemLucro(produto.getMargemLucro());
         editado.setCodigo(produto.getCodigo());
-        editado.setMargemPromocao(produto.getMargemPromocao());
-        editado.setPromocao(produto.isPromocao());
         editado.setKg(produto.isKg());
         editado.setAtivo(produto.isAtivo());
 
@@ -86,13 +81,13 @@ public class ProdutoService {
         produtoRepository.save(produto);
     }
 
-    public void changePromocao(UUID id) {
-        Produto produto = produtoRepository.findById(id)
-                .orElseThrow(ProdutoException::produtoNaoEncontrado);
-
-        produto.setPromocao(!produto.isPromocao());
-        produtoRepository.save(produto);
-    }
+//    public void changePromocao(UUID id) {
+//        Produto produto = produtoRepository.findById(id)
+//                .orElseThrow(ProdutoException::produtoNaoEncontrado);
+//
+//        produto.setPromocao(!produto.isPromocao());
+//        produtoRepository.save(produto);
+//    }
 
     public void changeKg(UUID id) {
         Produto produto = produtoRepository.findById(id)

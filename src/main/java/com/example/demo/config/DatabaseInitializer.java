@@ -107,7 +107,6 @@ public class DatabaseInitializer {
                 produto1.setCodigo("P001");
                 produto1.setValorVenda(50.0);
                 produto1.setValorCusto(30.0);
-                produto1.setMargemLucro(20.0);
                 produto1.setAtivo(true);
 
                 Produto produto2 = new Produto();
@@ -116,7 +115,6 @@ public class DatabaseInitializer {
                 produto2.setCodigo("P002");
                 produto2.setValorVenda(100.0);
                 produto2.setValorCusto(70.0);
-                produto2.setMargemLucro(30.0);
                 produto2.setAtivo(true);
 
                 // Salva os produtos

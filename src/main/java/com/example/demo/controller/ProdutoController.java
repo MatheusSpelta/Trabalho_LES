@@ -86,15 +86,15 @@ public class ProdutoController {
         produtoService.changeAtivo(id);
     }
 
-    @PutMapping("/mudarPromocao/{id}")
-    @Operation(description = "Muda o status de promoção de um Produto.", responses = {
-            @ApiResponse(responseCode = "200", description = "Caso o status de promoção do Produto seja alterado com sucesso."),
-            @ApiResponse(responseCode = "400", description = "Produto não encontrado."),
-            @ApiResponse(responseCode = "500", description = "Caso não tenha sido possível realizar a operação.")
-    })
-    public void mudarPromocao(@PathVariable UUID id) throws RelationTypeNotFoundException {
-        produtoService.changePromocao(id);
-    }
+//    @PutMapping("/mudarPromocao/{id}")
+//    @Operation(description = "Muda o status de promoção de um Produto.", responses = {
+//            @ApiResponse(responseCode = "200", description = "Caso o status de promoção do Produto seja alterado com sucesso."),
+//            @ApiResponse(responseCode = "400", description = "Produto não encontrado."),
+//            @ApiResponse(responseCode = "500", description = "Caso não tenha sido possível realizar a operação.")
+//    })
+//    public void mudarPromocao(@PathVariable UUID id) throws RelationTypeNotFoundException {
+//        produtoService.changePromocao(id);
+//    }
 
     @PutMapping("/mudarKg/{id}")
     @Operation(description = "Muda o status de kg de um Produto.", responses = {

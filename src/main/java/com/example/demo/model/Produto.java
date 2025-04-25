@@ -27,11 +27,8 @@ public class Produto {
     private String EAN;
     private String codigo;
     private double valorVenda;
-    private double margemLucro;
     private double valorCusto;
-    private double margemPromocao;
 
-    private boolean isPromocao;
     private boolean ativo = true;
     private boolean isKg;
 
