@@ -36,7 +36,7 @@ class RelatoriosController {
         return relatoriosService.calcularTicketMedioPorCliente(request.getDataInicio(), request.getDataFim());
     }
 
-    @GetMapping("/relatorio-diario")
+    @PostMapping("/relatorio-diario")
     @Operation(description = "Retorna a lista de clientes atendidos por dia.")
     public List<Cliente> relatorioDiario(@RequestBody LocalDate data) {
         return relatoriosService.clientesAtendidosPorDia(data);
@@ -48,7 +48,7 @@ class RelatoriosController {
         return relatoriosService.obterVendasPorCliente(clienteId);
     }
 
-    @GetMapping("/vendas-diaria")
+    @PostMapping("/vendas-diaria")
     @Operation(description = "Retorna o total de vendas do dia.")
     public RelatorioTotalDTO vendasDiaria(@RequestBody LocalDate data) {
         return relatoriosService.obterVendasDiaria(data);
@@ -60,13 +60,13 @@ class RelatoriosController {
         return relatoriosService.obterRelatorioVendasPorProduto(request.getDataInicio(), request.getDataFim());
     }
 
-    @GetMapping("/relatorio-compras")
+    @PostMapping("/relatorio-compras")
     @Operation(description = "Retorna o relatorio de compras de um periodo expecifico")
     public RelatorioCompraDTO relatorioCompras(@RequestBody DataRequestDTO request) {
         return relatoriosService.obterRelatorioCompras(request.getDataInicio(), request.getDataFim());
     }
 
-    @GetMapping("/dre")
+    @PostMapping("/dre")
     @Operation(description = "Retorna o DRE de um periodo expecifico")
     public DreDiarioDTO relatorioDRE(@RequestBody DataRequestDTO request) {
         return relatoriosService.gerarDreDiario(request.getDataInicio(), request.getDataFim());
