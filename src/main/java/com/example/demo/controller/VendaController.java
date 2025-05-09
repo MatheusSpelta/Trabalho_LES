@@ -1,5 +1,7 @@
 package com.example.demo.controller;
 
+import com.example.demo.DTO.Relatorios.DataRequestDTO;
+import com.example.demo.DTO.ValorAbertoDTO;
 import com.example.demo.DTO.VendaDTO;
 import com.example.demo.DTO.VendaResponseDTO;
 import com.example.demo.model.Venda;
@@ -99,5 +101,12 @@ public class VendaController {
     public ResponseEntity<?> imprimirUltimaVenda(@PathVariable String cartaoId) {
         vendaService.imprimirUltimaVenda(cartaoId);
         return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/emAberto")
+    @Operation(description = "Retorna uma lsitagem contendo todas as vendas em aberto de cada Cliente com seus valores totais.")
+    public ResponseEntity<List<ValorAbertoDTO>> listarVendasEmAberto(@RequestBody DataRequestDTO data) {
+        List<ValorAbertoDTO> vendasEmAberto = vendaService.listarVendasEmAberto(data);
+        return ResponseEntity.ok(vendasEmAberto);
     }
 }

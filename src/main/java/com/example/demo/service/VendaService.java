@@ -1,6 +1,8 @@
 package com.example.demo.service;
 
 import com.example.demo.DTO.ProdutosDTO;
+import com.example.demo.DTO.Relatorios.DataRequestDTO;
+import com.example.demo.DTO.ValorAbertoDTO;
 import com.example.demo.DTO.VendaDTO;
 import com.example.demo.DTO.VendaResponseDTO;
 import com.example.demo.exception.ClienteException;
@@ -18,9 +20,10 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
@@ -77,6 +80,9 @@ public class VendaService {
         venda.setPagamentoCredito(valorCreditoUtilizado);
         venda.setPagamentoDebito(valorDebitoUtilizado);
         venda.setPago(valorCreditoUtilizado == 0);
+        if (venda.isPago()) {
+            venda.setDataPagamento(LocalDateTime.now());
+        }
 
         // Ajusta a data e hora para o fuso horário do Brasil
         venda.setDataVenda(ajustarParaFusoHorarioBrasil(LocalDateTime.now()));
@@ -304,4 +310,31 @@ public class VendaService {
         ZonedDateTime dataHoraBrasil = dataHora.atZone(ZoneId.systemDefault()).withZoneSameInstant(fusoHorarioBrasil);
         return dataHoraBrasil.toLocalDateTime();
     }
+
+    public List<ValorAbertoDTO> listarVendasEmAberto(DataRequestDTO dataRequest) {
+        LocalDate inicio = dataRequest.getDataInicio();
+        LocalDate fim = dataRequest.getDataFim();
+
+        // Buscar todas as vendas em aberto no período
+        List<Venda> vendasEmAberto = vendaRepository.findVendasNaoPagasPorPeriodo(inicio, fim);
+
+        // Agrupar vendas por cliente
+        Map<Cliente, List<Venda>> vendasPorCliente = vendasEmAberto.stream()
+                .collect(Collectors.groupingBy(Venda::getCliente));
+
+        // Criar a lista de ValorAbertoDTO
+        List<ValorAbertoDTO> valoresAbertos = vendasPorCliente.entrySet().stream()
+                .map(entry -> {
+                    Cliente cliente = entry.getKey();
+                    List<Venda> vendas = entry.getValue();
+                    float valorTotal = (float) vendas.stream()
+                            .mapToDouble(Venda::getPagamentoCredito)
+                            .sum();
+                    return new ValorAbertoDTO(cliente, vendas, valorTotal);
+                })
+                .toList();
+
+        return valoresAbertos;
+    }
+
 }

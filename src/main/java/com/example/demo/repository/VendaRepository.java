@@ -24,4 +24,7 @@ public interface VendaRepository extends JpaRepository<Venda, UUID> {
 
     @Query("SELECT v FROM Venda v WHERE v.cliente.id = :clienteId AND DATE(v.dataVenda) = :data")
     List<Venda> findByClienteIdAndDataVenda(@Param("clienteId") UUID clienteId, @Param("data") LocalDate data);
+
+    @Query("SELECT v FROM Venda v WHERE v.isPago = false AND DATE(v.dataVenda) BETWEEN :inicio AND :fim")
+    List<Venda> findVendasNaoPagasPorPeriodo(@Param("inicio") LocalDate inicio, @Param("fim") LocalDate fim);
 }
