@@ -7,6 +7,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -37,6 +38,8 @@ public class RelatorioService {
     }
 
     public RelatorioTotalDTO obterVendasDiaria(LocalDate data) {
+        LocalDateTime inicio = data.atStartOfDay();
+        LocalDateTime fim = data.atTime(23, 59, 59);
 
         List<Cliente> clientes = clienteService.findAll();
         List<ClienteRelatorioDTO> clientesRelatorios = new ArrayList<>();
@@ -48,7 +51,11 @@ public class RelatorioService {
         for (Cliente cliente : clientes) {
             List<VendaResponseDTO> vendasFiltradas = vendaService.listarVendasPorClienteId(cliente.getId())
                     .stream()
-                    .filter(venda -> venda.venda().getDataVenda().toLocalDate().equals(data))
+                    .filter(venda -> {
+                        LocalDateTime dataVenda = venda.venda().getDataVenda();
+                        return (dataVenda.isEqual(inicio) || dataVenda.isAfter(inicio)) &&
+                                (dataVenda.isEqual(fim) || dataVenda.isBefore(fim));
+                    })
                     .collect(Collectors.toList());
 
             double totalCliente = vendasFiltradas.stream().mapToDouble(v -> v.venda().getValorTotal()).sum();
@@ -66,8 +73,29 @@ public class RelatorioService {
         return new RelatorioTotalDTO(clientesRelatorios, totalVenda, totalCredito, totalDebito);
     }
 
-    public List<Cliente> clientesAtendidosPorDia(LocalDate data) {
-        return vendaService.findClientesAtendidos(data);
+    public List<ClienteConsumoDTO> clientesAtendidosPorDia(LocalDate data) {
+        LocalDateTime inicio = data.atStartOfDay();
+        LocalDateTime fim = data.atTime(23, 59, 59);
+
+        List<Cliente> clientes = clienteService.findAll();
+        List<ClienteConsumoDTO> clientesConsumo = new ArrayList<>();
+
+        for (Cliente cliente : clientes) {
+            double valorConsumido = vendaService.listarVendasPorClienteId(cliente.getId()).stream()
+                    .filter(venda -> {
+                        LocalDateTime dataVenda = venda.venda().getDataVenda();
+                        return (dataVenda.isEqual(inicio) || dataVenda.isAfter(inicio)) &&
+                                (dataVenda.isEqual(fim) || dataVenda.isBefore(fim));
+                    })
+                    .mapToDouble(venda -> venda.venda().getValorTotal())
+                    .sum();
+
+            if (valorConsumido > 0) {
+                clientesConsumo.add(new ClienteConsumoDTO(cliente, valorConsumido));
+            }
+        }
+
+        return clientesConsumo;
     }
 
     public List<Cliente> clientesAniversariantesHoje() {
@@ -75,6 +103,9 @@ public class RelatorioService {
     }
 
     public List<ClienteTicketMedioDTO> calcularTicketMedioPorCliente(LocalDate dataInicio, LocalDate dataFim) {
+        LocalDateTime inicio = dataInicio.atStartOfDay();
+        LocalDateTime fim = dataFim.atTime(23, 59, 59);
+
         List<Cliente> clientes = clienteService.findAll();
         List<ClienteTicketMedioDTO> ticketMedioPorCliente = new ArrayList<>();
 
@@ -82,9 +113,9 @@ public class RelatorioService {
             List<VendaResponseDTO> vendasFiltradas = vendaService.listarVendasPorClienteId(cliente.getId())
                     .stream()
                     .filter(venda -> {
-                        LocalDate dataVenda = venda.venda().getDataVenda().toLocalDate();
-                        return (dataVenda.isEqual(dataInicio) || dataVenda.isAfter(dataInicio)) &&
-                                (dataVenda.isEqual(dataFim) || dataVenda.isBefore(dataFim));
+                        LocalDateTime dataVenda = venda.venda().getDataVenda();
+                        return (dataVenda.isEqual(inicio) || dataVenda.isAfter(inicio)) &&
+                                (dataVenda.isEqual(fim) || dataVenda.isBefore(fim));
                     })
                     .toList();
 
@@ -126,19 +157,21 @@ public class RelatorioService {
         return relatorio;
     }
 
+
     public List<ProdutoRelatorioDTO> obterRelatorioVendasPorProduto(LocalDate dataInicio, LocalDate dataFim) {
-        // Buscar todas as vendas no período
+        LocalDateTime inicio = dataInicio.atStartOfDay();
+        LocalDateTime fim = dataFim.atTime(23, 59, 59);
+
         List<Venda> vendas = vendaService.listAll().stream()
                 .filter(venda -> {
-                    LocalDate dataVenda = venda.getDataVenda().toLocalDate();
-                    return (dataVenda.isEqual(dataInicio) || dataVenda.isAfter(dataInicio)) &&
-                            (dataVenda.isEqual(dataFim) || dataVenda.isBefore(dataFim));
+                    LocalDateTime dataVenda = venda.getDataVenda();
+                    return (dataVenda.isEqual(inicio) || dataVenda.isAfter(inicio)) &&
+                            (dataVenda.isEqual(fim) || dataVenda.isBefore(fim));
                 })
                 .toList();
 
         Map<UUID, ProdutoRelatorioDTO> relatorioMap = new HashMap<>();
 
-        // Iterar sobre as vendas e buscar os produtos vendidos
         for (Venda venda : vendas) {
             List<VendaProduto> produtosVendidos = vendaProdutoService.findByVendaId(venda.getId());
 
@@ -165,14 +198,23 @@ public class RelatorioService {
             }
         }
 
-        // Ordenar os produtos por descrição
         return relatorioMap.values().stream()
                 .sorted(Comparator.comparing(r -> r.produto().getDescricao()))
                 .toList();
     }
 
     public RelatorioCompraDTO obterRelatorioCompras(LocalDate dataInicio, LocalDate dataFim) {
-        List<Compra> compras = compraService.findAll();
+        LocalDateTime inicio = dataInicio.atStartOfDay();
+        LocalDateTime fim = dataFim.atTime(23, 59, 59);
+
+        List<Compra> compras = compraService.findAll().stream()
+                .filter(compra -> {
+                    LocalDateTime dataCompra = compra.getDataCompra();
+                    return (dataCompra.isEqual(inicio) || dataCompra.isAfter(inicio)) &&
+                            (dataCompra.isEqual(fim) || dataCompra.isBefore(fim));
+                })
+                .toList();
+
         double totalApagar = 0;
         double totalPago = 0;
         double totalVencido = 0;
@@ -189,7 +231,7 @@ public class RelatorioService {
                 totalApagar += compra.getValorTotal();
                 comprasApagar.add(compra);
 
-                if (compra.getDataVencimento() != null && compra.getDataVencimento().toLocalDate().isBefore(LocalDate.now())) {
+                if (compra.getDataVencimento() != null && compra.getDataVencimento().isBefore(LocalDateTime.now())) {
                     totalVencido += compra.getValorTotal();
                     comprasVencidas.add(compra);
                 }
@@ -200,34 +242,40 @@ public class RelatorioService {
     }
 
     public DreDiarioDTO gerarDreDiario(LocalDate dataInicio, LocalDate dataFim) {
+        LocalDateTime inicio = dataInicio.atStartOfDay();
+        LocalDateTime fim = dataFim.atTime(23, 59, 59);
+
         List<Cliente> clientesAtendidos = clienteService.findAll().stream()
                 .filter(cliente -> vendaService.listarVendasPorClienteId(cliente.getId()).stream()
                         .anyMatch(venda -> {
-                            LocalDate dataPagamento = venda.venda().getDataPagamento() != null
-                                    ? venda.venda().getDataPagamento().toLocalDate()
-                                    : null;
+                            LocalDateTime dataPagamento = venda.venda().getDataPagamento();
                             return dataPagamento != null &&
-                                    (dataPagamento.isEqual(dataInicio) || dataPagamento.isAfter(dataInicio)) &&
-                                    (dataPagamento.isEqual(dataFim) || dataPagamento.isBefore(dataFim));
+                                    (dataPagamento.isEqual(inicio) || dataPagamento.isAfter(inicio)) &&
+                                    (dataPagamento.isEqual(fim) || dataPagamento.isBefore(fim));
                         }))
                 .toList();
 
         double totalRecebido = clientesAtendidos.stream()
                 .flatMap(cliente -> vendaService.listarVendasPorClienteId(cliente.getId()).stream())
-                .filter(venda -> venda.venda().getDataPagamento() != null &&
-                        !venda.venda().getDataPagamento().toLocalDate().isBefore(dataInicio) &&
-                        !venda.venda().getDataPagamento().toLocalDate().isAfter(dataFim))
+                .filter(venda -> {
+                    LocalDateTime dataPagamento = venda.venda().getDataPagamento();
+                    return dataPagamento != null &&
+                            (dataPagamento.isEqual(inicio) || dataPagamento.isAfter(inicio)) &&
+                            (dataPagamento.isEqual(fim) || dataPagamento.isBefore(fim));
+                })
                 .mapToDouble(venda -> venda.venda().getValorTotal())
                 .sum();
 
         double totalGasto = compraService.findAll().stream()
-                .filter(compra -> compra.getDataPagamento() != null &&
-                        !compra.getDataPagamento().toLocalDate().isBefore(dataInicio) &&
-                        !compra.getDataPagamento().toLocalDate().isAfter(dataFim))
+                .filter(compra -> {
+                    LocalDateTime dataPagamento = compra.getDataPagamento();
+                    return dataPagamento != null &&
+                            (dataPagamento.isEqual(inicio) || dataPagamento.isAfter(inicio)) &&
+                            (dataPagamento.isEqual(fim) || dataPagamento.isBefore(fim));
+                })
                 .mapToDouble(Compra::getValorTotal)
                 .sum();
 
-        // Retornar o DRE Diário
         return new DreDiarioDTO(totalRecebido, totalGasto, clientesAtendidos.size(), clientesAtendidos);
     }
 

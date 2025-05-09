@@ -14,4 +14,8 @@ public class VendaException extends RuntimeException {
         return new VendaException("Venda não encontrado.");
     }
 
+    public static VendaException produtosNaoInformados() {
+        return new VendaException("Produtos não informados.");
+    }
+
 }

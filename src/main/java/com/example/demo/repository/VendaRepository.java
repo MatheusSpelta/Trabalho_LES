@@ -9,6 +9,7 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Repository
@@ -18,4 +19,9 @@ public interface VendaRepository extends JpaRepository<Venda, UUID> {
 
     @Query("SELECT DISTINCT v.cliente FROM Venda v WHERE DATE(v.dataVenda) = :data")
     List<Cliente> findClientesAtendidosPorDia(@Param("data") LocalDate data);
+
+    Optional<Venda> findTopByClienteIdOrderByDataVendaDesc(UUID clienteId);
+
+    @Query("SELECT v FROM Venda v WHERE v.cliente.id = :clienteId AND DATE(v.dataVenda) = :data")
+    List<Venda> findByClienteIdAndDataVenda(@Param("clienteId") UUID clienteId, @Param("data") LocalDate data);
 }

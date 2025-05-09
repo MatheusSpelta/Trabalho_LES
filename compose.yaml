@@ -2,7 +2,7 @@ services:
   db:
     image: postgres:latest
     environment:
-      POSTGRES_DB: les
+      POSTGRES_DB: LES
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
     ports:
@@ -17,10 +17,20 @@ services:
     depends_on:
       - db
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/les
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/LES
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: postgres
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      PRINTER_NAME: Termica
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    devices:
+        - "/dev/usb/lp0:/dev/usb/lp0"
+    privileged: true
 
 volumes:
-  postgres_data:
+  postgres_data: { }
+
+networks:
+  app-network:
+    driver: bridge

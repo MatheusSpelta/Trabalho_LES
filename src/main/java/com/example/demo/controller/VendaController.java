@@ -93,4 +93,11 @@ public class VendaController {
         vendaService.reimprimirVenda(vendaId);
         return ResponseEntity.ok().build();
     }
+
+    @GetMapping("imprimir/ultimaVenda/{cartaoId}")
+    @Operation(description = "Imprime a ultima venda do cliente baseado o cartao.")
+    public ResponseEntity<?> imprimirUltimaVenda(@PathVariable String cartaoId) {
+        vendaService.imprimirUltimaVenda(cartaoId);
+        return ResponseEntity.ok().build();
+    }
 }

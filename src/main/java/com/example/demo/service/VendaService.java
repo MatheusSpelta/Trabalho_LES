@@ -16,6 +16,8 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -31,11 +33,13 @@ public class VendaService {
 
     @Transactional
     public Venda realizarVenda(VendaDTO vendaDTO) {
-
-        System.out.println(vendaDTO.codigoCartao());
         Cliente cliente = clienteService.findByCartao(vendaDTO.codigoCartao());
         if (cliente == null) {
             throw ClienteException.clienteNaoEncontrado();
+        }
+
+        if (vendaDTO.produtos().isEmpty()) {
+            throw VendaException.produtosNaoInformados();
         }
 
         double valorTotal = vendaDTO.produtos().stream().mapToDouble(ProdutosDTO::valorTotal).sum();
@@ -44,7 +48,7 @@ public class VendaService {
         double valorDebitoUtilizado = 0;
         double valorCreditoUtilizado = 0;
 
-        // Substrair valor do saldo de débito
+        // Subtrair valor do saldo de débito
         if (cliente.getSaldoDebito() >= valorRestante) {
             valorDebitoUtilizado = valorRestante;
             cliente.setSaldoDebito(cliente.getSaldoDebito() - valorDebitoUtilizado);
@@ -55,7 +59,7 @@ public class VendaService {
             valorRestante -= valorDebitoUtilizado;
         }
 
-        // Substrair valor do saldo de crédito
+        // Subtrair valor do saldo de crédito
         if (valorRestante > 0) {
             if (cliente.getLimiteCredito() >= valorRestante) {
                 valorCreditoUtilizado = valorRestante;
@@ -73,12 +77,13 @@ public class VendaService {
         venda.setPagamentoCredito(valorCreditoUtilizado);
         venda.setPagamentoDebito(valorDebitoUtilizado);
         venda.setPago(valorCreditoUtilizado == 0);
-        venda.setDataVenda(LocalDateTime.now());
+
+        // Ajusta a data e hora para o fuso horário do Brasil
+        venda.setDataVenda(ajustarParaFusoHorarioBrasil(LocalDateTime.now()));
+
         venda = vendaRepository.save(venda);
 
         // Registrar os produtos vendidos
-
-        List<VendaProduto> vendaProdutos = new ArrayList<>();
         for (ProdutosDTO produtoDTO : vendaDTO.produtos()) {
             Produto produto = produtoDTO.produto();
             VendaProduto vendaProduto = new VendaProduto();
@@ -89,18 +94,8 @@ public class VendaService {
             vendaProduto.setValorTotal(produtoDTO.valorTotal());
 
             vendaProdutoService.salvar(vendaProduto);
-            vendaProdutos.add(vendaProduto);
         }
 
-//        impressoraTermicaService.imprimirRecibo(
-//                cliente,
-//                vendaProdutos,
-//                venda.getValorTotal(),
-//                venda.getPagamentoCredito(),
-//                venda.getPagamentoDebito(),
-//                cliente.getSaldoDebito(),
-//                cliente.getLimiteCredito()
-//        );
         return venda;
     }
 
@@ -271,6 +266,7 @@ public class VendaService {
         // Passar saldo em débito e limite de crédito disponível
         impressoraTermicaService.imprimirRecibo(
                 cliente,
+                venda,
                 produtos,
                 venda.getValorTotal(),
                 venda.getPagamentoCredito(),
@@ -278,5 +274,34 @@ public class VendaService {
                 cliente.getSaldoDebito(),
                 cliente.getLimiteCredito()
         );
+    }
+
+    public void imprimirUltimaVenda(String codigoCartao) {
+        Cliente cliente = clienteService.findByCartao(codigoCartao);
+        if (cliente == null) {
+            throw ClienteException.clienteNaoEncontrado();
+        }
+
+        Venda ultimaVenda = vendaRepository.findTopByClienteIdOrderByDataVendaDesc(cliente.getId())
+                .orElseThrow(() -> new RuntimeException("Nenhuma venda encontrada para o cliente com cartão " + codigoCartao));
+
+        List<VendaProduto> produtos = vendaProdutoService.findByVendaId(ultimaVenda.getId());
+
+        impressoraTermicaService.imprimirRecibo(
+                cliente,
+                ultimaVenda,
+                produtos,
+                ultimaVenda.getValorTotal(),
+                ultimaVenda.getPagamentoCredito(),
+                ultimaVenda.getPagamentoDebito(),
+                cliente.getSaldoDebito(),
+                cliente.getLimiteCredito()
+        );
+    }
+
+    public LocalDateTime ajustarParaFusoHorarioBrasil(LocalDateTime dataHora) {
+        ZoneId fusoHorarioBrasil = ZoneId.of("America/Sao_Paulo");
+        ZonedDateTime dataHoraBrasil = dataHora.atZone(ZoneId.systemDefault()).withZoneSameInstant(fusoHorarioBrasil);
+        return dataHoraBrasil.toLocalDateTime();
     }
 }
