@@ -89,7 +89,7 @@ public class DatabaseInitializer {
                 Cliente cliente = new Cliente();
                 cliente.setNome("Cliente Teste");
                 cliente.setCpf("123.456.789-00");
-                cliente.setCartao("1234567890123456");
+                cliente.setCartao("1234");
                 cliente.setSaldoDebito(500.0);
                 cliente.setLimiteCredito(1000.0);
                 cliente.setTelefone("11999999999");
