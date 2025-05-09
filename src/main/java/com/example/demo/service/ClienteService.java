@@ -55,6 +55,7 @@ public class ClienteService {
         editado.setAtivo(cliente.isAtivo());
         editado.setCpf(cliente.getCpf());
         editado.setCartao(cliente.getCartao());
+        editado.setSaldoDebito(cliente.getSaldoDebito());
         editado.setLimiteCredito(cliente.getLimiteCredito());
         editado.setMatricula(cliente.getMatricula());
 
