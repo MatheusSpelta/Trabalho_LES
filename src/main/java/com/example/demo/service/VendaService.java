@@ -47,44 +47,23 @@ public class VendaService {
 
         double valorTotal = vendaDTO.produtos().stream().mapToDouble(ProdutosDTO::valorTotal).sum();
 
-        double valorRestante = valorTotal;
-        double valorDebitoUtilizado = 0;
-        double valorCreditoUtilizado = 0;
-
-        // Subtrair valor do saldo de débito
-        if (cliente.getSaldoDebito() >= valorRestante) {
-            valorDebitoUtilizado = valorRestante;
-            cliente.setSaldoDebito(cliente.getSaldoDebito() - valorDebitoUtilizado);
-            valorRestante -= valorDebitoUtilizado;
-        } else {
-            valorDebitoUtilizado = cliente.getSaldoDebito();
-            cliente.setSaldoDebito(0);
-            valorRestante -= valorDebitoUtilizado;
+        // Verifica se o saldo de débito pode cobrir a venda considerando o limite de crédito
+        double saldoDisponivel = cliente.getSaldoDebito() + cliente.getLimiteCredito();
+        if (saldoDisponivel < valorTotal) {
+            throw VendaException.saldoInsuficiente();
         }
 
-        // Subtrair valor do saldo de crédito
-        if (valorRestante > 0) {
-            if (cliente.getLimiteCredito() >= valorRestante) {
-                valorCreditoUtilizado = valorRestante;
-                cliente.setLimiteCredito(cliente.getLimiteCredito() - valorCreditoUtilizado);
-                valorRestante -= valorCreditoUtilizado;
-            } else {
-                throw VendaException.saldoInsuficiente();
-            }
-        }
+        // Atualiza o saldo de débito
+        cliente.setSaldoDebito(cliente.getSaldoDebito() - valorTotal);
 
         // Registra a venda
         Venda venda = new Venda();
         venda.setCliente(cliente);
         venda.setValorTotal(valorTotal);
-        venda.setPagamentoCredito(valorCreditoUtilizado);
-        venda.setPagamentoDebito(valorDebitoUtilizado);
-        venda.setPago(valorCreditoUtilizado == 0);
-        if (venda.isPago()) {
-            venda.setDataPagamento(LocalDateTime.now());
-        }
-
-        // Ajusta a data e hora para o fuso horário do Brasil
+        venda.setPagamentoDebito(valorTotal);
+        venda.setPagamentoCredito(0); // Crédito não é alterado
+        venda.setPago(true);
+        venda.setDataPagamento(LocalDateTime.now());
         venda.setDataVenda(ajustarParaFusoHorarioBrasil(LocalDateTime.now()));
 
         venda = vendaRepository.save(venda);
@@ -114,44 +93,26 @@ public class VendaService {
         // Buscar o cliente associado à venda
         Cliente cliente = vendaExistente.getCliente();
 
-        // Reverter os valores de débito e crédito do cliente
+        // Reverter o saldo de débito do cliente
         cliente.setSaldoDebito(cliente.getSaldoDebito() + vendaExistente.getPagamentoDebito());
-        cliente.setLimiteCredito(cliente.getLimiteCredito() + vendaExistente.getPagamentoCredito());
 
         // Calcular o novo valor total da venda
         double novoValorTotal = vendaDTO.produtos().stream().mapToDouble(ProdutosDTO::valorTotal).sum();
 
-        double valorRestante = novoValorTotal;
-        double novoValorDebitoUtilizado = 0;
-        double novoValorCreditoUtilizado = 0;
-
-        // Subtrair o novo valor do saldo de débito
-        if (cliente.getSaldoDebito() >= valorRestante) {
-            novoValorDebitoUtilizado = valorRestante;
-            cliente.setSaldoDebito(cliente.getSaldoDebito() - novoValorDebitoUtilizado);
-            valorRestante -= novoValorDebitoUtilizado;
-        } else {
-            novoValorDebitoUtilizado = cliente.getSaldoDebito();
-            cliente.setSaldoDebito(0);
-            valorRestante -= novoValorDebitoUtilizado;
+        // Verificar se o saldo disponível cobre o novo valor total
+        double saldoDisponivel = cliente.getSaldoDebito() + cliente.getLimiteCredito();
+        if (saldoDisponivel < novoValorTotal) {
+            throw VendaException.saldoInsuficiente();
         }
 
-        // Subtrair o novo valor do saldo de crédito
-        if (valorRestante > 0) {
-            if (cliente.getLimiteCredito() >= valorRestante) {
-                novoValorCreditoUtilizado = valorRestante;
-                cliente.setLimiteCredito(cliente.getLimiteCredito() - novoValorCreditoUtilizado);
-                valorRestante -= novoValorCreditoUtilizado;
-            } else {
-                throw VendaException.saldoInsuficiente();
-            }
-        }
+        // Atualizar o saldo de débito
+        cliente.setSaldoDebito(cliente.getSaldoDebito() - novoValorTotal);
 
         // Atualizar os dados da venda
         vendaExistente.setValorTotal(novoValorTotal);
-        vendaExistente.setPagamentoDebito(novoValorDebitoUtilizado);
-        vendaExistente.setPagamentoCredito(novoValorCreditoUtilizado);
-        vendaExistente.setPago(novoValorCreditoUtilizado == 0);
+        vendaExistente.setPagamentoDebito(novoValorTotal);
+        vendaExistente.setPagamentoCredito(0); // Crédito não é alterado
+        vendaExistente.setPago(true);
         vendaExistente.setDataVenda(LocalDateTime.now());
 
         // Atualizar os produtos da venda
@@ -191,19 +152,6 @@ public class VendaService {
 
         // Salvar a venda atualizada
         return vendaRepository.save(vendaExistente);
-    }
-
-    public List<VendaResponseDTO> listarVendasPorCartaoCliente(String codigoCartao, boolean ativo) {
-        Cliente cliente = clienteService.findByCartao(codigoCartao);
-        if (cliente == null) {
-            throw ClienteException.clienteNaoEncontrado();
-        }
-
-        List<Venda> vendas = vendaRepository.findByClienteId(cliente.getId());
-        return vendas.stream().map(venda -> {
-            List<VendaProduto> produtos = vendaProdutoService.findByVendaId(venda.getId(), ativo);
-            return new VendaResponseDTO(venda, produtos);
-        }).toList();
     }
 
     public List<VendaResponseDTO> listarTodasVendasPorCartaoCliente(String codigoCartao) {

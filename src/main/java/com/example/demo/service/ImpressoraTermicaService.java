@@ -61,10 +61,10 @@ class ImpressoraTermicaService {
 
             escpos.writeLF("--------------------------------");
             escpos.writeLF(String.format("Total: R$ %.2f", total));
-            escpos.writeLF(String.format("Pago no Crédito: R$ %.2f", valorCredito));
-            escpos.writeLF(String.format("Pago no Débito: R$ %.2f", valorDebito));
-            escpos.writeLF(String.format("Saldo em Débito: R$ %.2f", saldoDebito));
-            escpos.writeLF(String.format("Limite de Crédito Disponível: R$ %.2f", limiteCreditoDisponivel));
+            escpos.writeLF(String.format("Pago no Credito: R$ %.2f", valorCredito));
+            escpos.writeLF(String.format("Pago no Debito: R$ %.2f", valorDebito));
+            escpos.writeLF(String.format("Saldo em Debito: R$ %.2f", saldoDebito));
+            escpos.writeLF(String.format("Limite de Credito Disponivel: R$ %.2f", limiteCreditoDisponivel));
             escpos.writeLF("--------------------------------");
 
             escpos.feed(5);

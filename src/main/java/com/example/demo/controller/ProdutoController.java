@@ -86,6 +86,7 @@ public class ProdutoController {
         produtoService.changeAtivo(id);
     }
 
+
 //    @PutMapping("/mudarPromocao/{id}")
 //    @Operation(description = "Muda o status de promoção de um Produto.", responses = {
 //            @ApiResponse(responseCode = "200", description = "Caso o status de promoção do Produto seja alterado com sucesso."),
@@ -96,15 +97,15 @@ public class ProdutoController {
 //        produtoService.changePromocao(id);
 //    }
 
-    @PutMapping("/mudarKg/{id}")
-    @Operation(description = "Muda o status de kg de um Produto.", responses = {
-            @ApiResponse(responseCode = "200", description = "Caso o status de kg do Produto seja alterado com sucesso."),
-            @ApiResponse(responseCode = "400", description = "Produto não encontrado."),
-            @ApiResponse(responseCode = "500", description = "Caso não tenha sido possível realizar a operação.")
-    })
-    public void mudarKg(@PathVariable UUID id) throws RelationTypeNotFoundException {
-        produtoService.changeKg(id);
-    }
+//    @PutMapping("/mudarKg/{id}")
+//    @Operation(description = "Muda o status de kg de um Produto.", responses = {
+//            @ApiResponse(responseCode = "200", description = "Caso o status de kg do Produto seja alterado com sucesso."),
+//            @ApiResponse(responseCode = "400", description = "Produto não encontrado."),
+//            @ApiResponse(responseCode = "500", description = "Caso não tenha sido possível realizar a operação.")
+//    })
+//    public void mudarKg(@PathVariable UUID id) throws RelationTypeNotFoundException {
+//        produtoService.changeKg(id);
+//    }
 
     @GetMapping("/buscar/ean/{ean}")
     @Operation(description = "Busca um Produto pelo EAN.", responses = {

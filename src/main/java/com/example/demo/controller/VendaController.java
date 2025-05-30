@@ -49,7 +49,7 @@ public class VendaController {
             @ApiResponse(responseCode = "500", description = "Caso não tenha sido possível realizar a operação.")
     })
     public List<VendaResponseDTO> listarVendasPorCliente(@PathVariable String cartao) {
-        return vendaService.listarVendasPorCartaoCliente(cartao, true);
+        return vendaService.listarTodasVendasPorCartaoCliente(cartao);
     }
 
     @GetMapping("/listar/todas/vendas/clienteCartao/{cartao}")

@@ -15,6 +15,7 @@ import java.util.UUID;
 public class ProdutoService {
 
     private final ProdutoRepository produtoRepository;
+    private final BalancaService balancaService;
 
     public Produto saveAll(Produto produto) {
         if (produto.getEAN() != null) {
@@ -81,20 +82,11 @@ public class ProdutoService {
         produtoRepository.save(produto);
     }
 
-//    public void changePromocao(UUID id) {
-//        Produto produto = produtoRepository.findById(id)
-//                .orElseThrow(ProdutoException::produtoNaoEncontrado);
-//
-//        produto.setPromocao(!produto.isPromocao());
-//        produtoRepository.save(produto);
-//    }
 
-    public void changeKg(UUID id) {
-        Produto produto = produtoRepository.findById(id)
-                .orElseThrow(ProdutoException::produtoNaoEncontrado);
+    public double calcularKgProduto(String porta) {
+        balancaService.init(porta);
+        return balancaService.getUltimoPeso();
 
-        produto.setKg(!produto.isKg());
-        produtoRepository.save(produto);
     }
 
     public Produto findByEan(String ean) {
