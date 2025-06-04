@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 
 import javax.management.relation.RelationTypeNotFoundException;
 import java.time.LocalDate;
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -25,6 +26,7 @@ public class ClienteService {
     private final EnderecoService enderecoService;
 
     public void salvar(Cliente cliente) {
+        cliente.setUltimaAlteracao(ZonedDateTime.now().toLocalDateTime());
         clienteRepository.save(cliente);
     }
 
