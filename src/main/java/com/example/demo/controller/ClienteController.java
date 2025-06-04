@@ -26,63 +26,62 @@ import lombok.AllArgsConstructor;
 @RequestMapping("/api/cliente")
 @AllArgsConstructor
 public class ClienteController {
-    
-    @Autowired
+
     private final ClienteService clienteService;
 
     @PostMapping("/criar")
-    @Operation (description="Cria um novo Cliente.", responses = {
-        @ApiResponse(responseCode = "200", description = "Caso o Cliente seja criado com sucesso."),
-        @ApiResponse(responseCode = "500", description = "Caso não tenha sido possível realizar a operação.")
+    @Operation(description = "Cria um novo Cliente.", responses = {
+            @ApiResponse(responseCode = "200", description = "Caso o Cliente seja criado com sucesso."),
+            @ApiResponse(responseCode = "500", description = "Caso não tenha sido possível realizar a operação.")
     })
     public Cliente criar(@RequestBody ClienteDTO clienteDTO) {
         return clienteService.saveAll(clienteDTO);
     }
 
     @PutMapping("/editar/{id}")
-    @Operation (description="Edita um Cliente.", responses = {
-        @ApiResponse(responseCode = "200", description = "Caso o Cliente seja editado com sucesso."),
-        @ApiResponse(responseCode = "400", description = "Cliente não encontrado."),
-        @ApiResponse(responseCode = "500", description = "Caso não tenha sido possível realizar a operação.")
+    @Operation(description = "Edita um Cliente.", responses = {
+            @ApiResponse(responseCode = "200", description = "Caso o Cliente seja editado com sucesso."),
+            @ApiResponse(responseCode = "400", description = "Cliente não encontrado."),
+            @ApiResponse(responseCode = "500", description = "Caso não tenha sido possível realizar a operação.")
     })
     public Cliente editar(@PathVariable UUID id, @RequestBody ClienteDTO clienteDTO) throws RelationTypeNotFoundException {
         return clienteService.editId(id, clienteDTO);
     }
 
     @GetMapping("/listar")
-    @Operation (description="Lista todos os Clientes.", responses = {
-        @ApiResponse(responseCode = "200", description = "Caso a lista de Clientes seja retornada com sucesso."),
-        @ApiResponse(responseCode = "500", description = "Caso não tenha sido possível realizar a operação.")
+    @Operation(description = "Lista todos os Clientes.", responses = {
+            @ApiResponse(responseCode = "200", description = "Caso a lista de Clientes seja retornada com sucesso."),
+            @ApiResponse(responseCode = "500", description = "Caso não tenha sido possível realizar a operação.")
     })
     public List<Cliente> listar() {
         return clienteService.findAll();
     }
 
     @GetMapping("/buscar/{id}")
-    @Operation (description="Busca um Cliente pelo ID.", responses = {
-        @ApiResponse(responseCode = "200", description = "Caso o Cliente seja encontrado com sucesso."),
-        @ApiResponse(responseCode = "400", description = "Cliente não encontrado."),
-        @ApiResponse(responseCode = "500", description = "Caso não tenha sido possível realizar a operação.")
+    @Operation(description = "Busca um Cliente pelo ID.", responses = {
+            @ApiResponse(responseCode = "200", description = "Caso o Cliente seja encontrado com sucesso."),
+            @ApiResponse(responseCode = "400", description = "Cliente não encontrado."),
+            @ApiResponse(responseCode = "500", description = "Caso não tenha sido possível realizar a operação.")
     })
     public Cliente buscar(@PathVariable UUID id) throws RelationTypeNotFoundException {
         return clienteService.findById(id);
     }
 
     @PutMapping("/ativar/{id}")
-    @Operation (description="Ativa um Cliente.", responses = {
-        @ApiResponse(responseCode = "200", description = "Caso o Cliente seja ativado com sucesso."),
-        @ApiResponse(responseCode = "400", description = "Cliente não encontrado."),
-        @ApiResponse(responseCode = "500", description = "Caso não tenha sido possível realizar a operação.")
+    @Operation(description = "Ativa um Cliente.", responses = {
+            @ApiResponse(responseCode = "200", description = "Caso o Cliente seja ativado com sucesso."),
+            @ApiResponse(responseCode = "400", description = "Cliente não encontrado."),
+            @ApiResponse(responseCode = "500", description = "Caso não tenha sido possível realizar a operação.")
     })
     public void ativar(@PathVariable UUID id) throws RelationTypeNotFoundException {
         clienteService.changeAtivo(id);
     }
 
     @GetMapping("/buscar/cartao/{cartao}")
-    @Operation(description="Busca um Cliente pelo Cartão.", responses = {
-        @ApiResponse(responseCode = "200", description = "Caso o Cliente seja encontrado com sucesso."),
-        @ApiResponse(responseCode = "400", description = "Cliente não encontrado."),
-        @ApiResponse(responseCode = "500", description = "Caso não tenha sido possível realizar a operação.")
+    @Operation(description = "Busca um Cliente pelo Cartão.", responses = {
+            @ApiResponse(responseCode = "200", description = "Caso o Cliente seja encontrado com sucesso."),
+            @ApiResponse(responseCode = "400", description = "Cliente não encontrado."),
+            @ApiResponse(responseCode = "500", description = "Caso não tenha sido possível realizar a operação.")
     })
     public Cliente buscarPorCartao(@PathVariable String cartao) throws RelationTypeNotFoundException {
         return clienteService.findByCartao(cartao);

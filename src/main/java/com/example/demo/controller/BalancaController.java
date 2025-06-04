@@ -14,7 +14,6 @@ public class BalancaController {
 
     @PostMapping("/peso/{porta}")
     public ResponseEntity<Double> getUltimoPeso(@PathVariable String porta) {
-        balancaService.init(porta);
 
         // Aguarda até que o peso seja atualizado ou atinja timeout (ex: 2 segundos)
         Double peso = 0.0;

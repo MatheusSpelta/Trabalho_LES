@@ -29,6 +29,7 @@ public class Venda {
 
     private double pagamentoCredito;
     private double pagamentoDebito;
+    private double valorEmAberto;
 
     @ManyToOne
     @JoinColumn(name = "cliente_id")
@@ -38,31 +39,30 @@ public class Venda {
 
     private boolean ativo = true;
 
-    // @Enumerated(EnumType.STRING)
-    // private FormaPagamento formaPagamento;
+    @Temporal(TemporalType.TIMESTAMP)
+    private ZonedDateTime dataPagamentoCredito;
 
     @Temporal(TemporalType.TIMESTAMP)
-    private LocalDateTime dataVenda;
+    private ZonedDateTime dataPagamentoDebito;
 
     @Temporal(TemporalType.TIMESTAMP)
-    private LocalDateTime dataPagamento;
+    private ZonedDateTime dataPagamentoFinal;
 
     @Temporal(TemporalType.TIMESTAMP)
-    private LocalDateTime dataCriacao;
+    private ZonedDateTime dataCriacao;
 
     @Temporal(TemporalType.TIMESTAMP)
-    private LocalDateTime ultimaAlteracao;
+    private ZonedDateTime ultimaAlteracao;
 
     @PreUpdate
     public void preUpdate() {
-        ultimaAlteracao = ZonedDateTime.now(ZoneId.of("America/Sao_Paulo")).toLocalDateTime();
+        ultimaAlteracao = ZonedDateTime.now(ZoneId.of("America/Sao_Paulo"));
     }
 
     @PrePersist
     public void prePersist() {
-        final LocalDateTime atual = ZonedDateTime.now(ZoneId.of("America/Sao_Paulo")).toLocalDateTime();
-        dataCriacao = atual;
-        ultimaAlteracao = atual;
+        dataCriacao = ZonedDateTime.now(ZoneId.of("America/Sao_Paulo"));
+
     }
 
 }

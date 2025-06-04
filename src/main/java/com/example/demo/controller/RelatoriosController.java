@@ -39,7 +39,7 @@ class RelatoriosController {
     @PostMapping("/relatorio-diario")
     @Operation(description = "Retorna a lista de clientes atendidos por dia.")
     public List<ClienteConsumoDTO> relatorioDiario(@RequestBody LocalDate data) {
-        return relatoriosService.clientesAtendidosPorDia(data);
+        return relatoriosService.consumoDiarioPorUsuario(data);
     }
 
     @GetMapping("/vendas-cliente/{clienteId}")

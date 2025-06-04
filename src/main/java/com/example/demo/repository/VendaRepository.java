@@ -17,14 +17,14 @@ public interface VendaRepository extends JpaRepository<Venda, UUID> {
 
     List<Venda> findByClienteId(UUID clienteId);
 
-    @Query("SELECT DISTINCT v.cliente FROM Venda v WHERE DATE(v.dataVenda) = :data")
+    @Query("SELECT DISTINCT v.cliente FROM Venda v WHERE DATE(v.dataCriacao) = :data")
     List<Cliente> findClientesAtendidosPorDia(@Param("data") LocalDate data);
 
-    Optional<Venda> findTopByClienteIdOrderByDataVendaDesc(UUID clienteId);
+    Optional<Venda> findTopByClienteIdOrderByDataCriacaoDesc(UUID clienteId);
 
-    @Query("SELECT v FROM Venda v WHERE v.cliente.id = :clienteId AND DATE(v.dataVenda) = :data")
-    List<Venda> findByClienteIdAndDataVenda(@Param("clienteId") UUID clienteId, @Param("data") LocalDate data);
+    @Query("SELECT v FROM Venda v WHERE v.cliente.id = :clienteId AND DATE(v.dataCriacao) = :data")
+    List<Venda> findByClienteIdAndDataCriacao(@Param("clienteId") UUID clienteId, @Param("data") LocalDate data);
 
-    @Query("SELECT v FROM Venda v WHERE v.isPago = false AND DATE(v.dataVenda) BETWEEN :inicio AND :fim")
+    @Query("SELECT v FROM Venda v WHERE v.isPago = false AND DATE(v.dataCriacao) BETWEEN :inicio AND :fim")
     List<Venda> findVendasNaoPagasPorPeriodo(@Param("inicio") LocalDate inicio, @Param("fim") LocalDate fim);
 }

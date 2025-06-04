@@ -49,7 +49,7 @@ class ImpressoraTermicaService {
             escpos.writeLF("--------------------------------");
             escpos.writeLF("Cliente: " + cliente.getNome());
             escpos.writeLF("Matricula: " + cliente.getMatricula());
-            String dataFormatada = venda.getDataVenda().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"));
+            String dataFormatada = venda.getDataCriacao().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"));
             escpos.writeLF("Data: " + dataFormatada);
             escpos.writeLF("--------------------------------");
 

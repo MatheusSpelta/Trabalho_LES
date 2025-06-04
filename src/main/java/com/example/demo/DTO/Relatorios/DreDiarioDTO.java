@@ -6,8 +6,11 @@ import java.util.List;
 
 public record DreDiarioDTO(
         double totalRecebido,
-        double totalGasto,
-        Integer numClientesAtendidos,
-        List<Cliente> clientesAtendidos
+        double totalDebito,
+        double totalCredito,
+        double totalPago,
+        long registrosAPagar,
+        double resultado,
+        double saldoCaixa
 ) {
 }

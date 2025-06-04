@@ -37,38 +37,47 @@ public class VendaService {
     @Transactional
     public Venda realizarVenda(VendaDTO vendaDTO) {
         Cliente cliente = clienteService.findByCartao(vendaDTO.codigoCartao());
-        if (cliente == null) {
-            throw ClienteException.clienteNaoEncontrado();
-        }
-
-        if (vendaDTO.produtos().isEmpty()) {
-            throw VendaException.produtosNaoInformados();
-        }
+        if (cliente == null) throw ClienteException.clienteNaoEncontrado();
+        if (vendaDTO.produtos().isEmpty()) throw VendaException.produtosNaoInformados();
 
         double valorTotal = vendaDTO.produtos().stream().mapToDouble(ProdutosDTO::valorTotal).sum();
 
-        // Verifica se o saldo de débito pode cobrir a venda considerando o limite de crédito
-        double saldoDisponivel = cliente.getSaldoDebito() + cliente.getLimiteCredito();
-        if (saldoDisponivel < valorTotal) {
+        // Permite saldoDebito negativo até o limite de crédito
+        if (cliente.getSaldoDebito() - valorTotal < -cliente.getLimiteCredito()) {
             throw VendaException.saldoInsuficiente();
         }
 
-        // Atualiza o saldo de débito
-        cliente.setSaldoDebito(cliente.getSaldoDebito() - valorTotal);
-
-        // Registra a venda
         Venda venda = new Venda();
         venda.setCliente(cliente);
         venda.setValorTotal(valorTotal);
-        venda.setPagamentoDebito(valorTotal);
-        venda.setPagamentoCredito(0); // Crédito não é alterado
-        venda.setPago(true);
-        venda.setDataPagamento(LocalDateTime.now());
-        venda.setDataVenda(ajustarParaFusoHorarioBrasil(LocalDateTime.now()));
 
+        // Se saldoDebito suficiente, registra como pago no débito
+        if (cliente.getSaldoDebito() >= valorTotal) {
+            cliente.setSaldoDebito(cliente.getSaldoDebito() - valorTotal);
+            venda.setPagamentoDebito(valorTotal);
+            venda.setPagamentoCredito(0);
+            venda.setValorEmAberto(0);
+            venda.setPago(true);
+            venda.setDataPagamentoDebito(ZonedDateTime.now());
+            venda.setDataPagamentoFinal(ZonedDateTime.now());
+        } else {
+            // Parte no débito, parte no crédito
+            double valorDebito = Math.max(cliente.getSaldoDebito(), 0);
+            double valorCredito = valorTotal - valorDebito;
+            cliente.setSaldoDebito(cliente.getSaldoDebito() - valorTotal);
+
+            venda.setPagamentoDebito(valorDebito);
+            venda.setPagamentoCredito(valorCredito);
+            venda.setValorEmAberto(valorCredito);
+            venda.setPago(false);
+            venda.setDataPagamentoDebito(valorDebito > 0 ? ZonedDateTime.now() : null);
+            venda.setDataPagamentoCredito(null); // Só será preenchida quando quitar o crédito
+            venda.setDataPagamentoFinal(null);
+        }
+
+//        venda.getDataPagamentoFinal(ZonedDateTime.now());
         venda = vendaRepository.save(venda);
 
-        // Registrar os produtos vendidos
         for (ProdutosDTO produtoDTO : vendaDTO.produtos()) {
             Produto produto = produtoDTO.produto();
             VendaProduto vendaProduto = new VendaProduto();
@@ -77,7 +86,6 @@ public class VendaService {
             vendaProduto.setQuantidade(produtoDTO.quantidade());
             vendaProduto.setValorUnitario(produto.getValorVenda());
             vendaProduto.setValorTotal(produtoDTO.valorTotal());
-
             vendaProdutoService.salvar(vendaProduto);
         }
 
@@ -86,42 +94,44 @@ public class VendaService {
 
     @Transactional
     public Venda editarVenda(UUID id, VendaDTO vendaDTO) {
-        // Buscar a venda existente
         Venda vendaExistente = vendaRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Venda com id " + id + " não encontrada."));
-
-        // Buscar o cliente associado à venda
         Cliente cliente = vendaExistente.getCliente();
 
-        // Reverter o saldo de débito do cliente
-        cliente.setSaldoDebito(cliente.getSaldoDebito() + vendaExistente.getPagamentoDebito());
+        // Reverter saldo de débito do cliente
+        cliente.setSaldoDebito(cliente.getSaldoDebito() + vendaExistente.getPagamentoDebito() + vendaExistente.getPagamentoCredito());
 
-        // Calcular o novo valor total da venda
         double novoValorTotal = vendaDTO.produtos().stream().mapToDouble(ProdutosDTO::valorTotal).sum();
 
-        // Verificar se o saldo disponível cobre o novo valor total
-        double saldoDisponivel = cliente.getSaldoDebito() + cliente.getLimiteCredito();
-        if (saldoDisponivel < novoValorTotal) {
+        // Permite saldoDebito negativo até o limite de crédito
+        if (cliente.getSaldoDebito() - novoValorTotal < -cliente.getLimiteCredito()) {
             throw VendaException.saldoInsuficiente();
         }
 
-        // Atualizar o saldo de débito
+        double valorDebito = Math.max(cliente.getSaldoDebito(), 0);
+        double valorCredito = novoValorTotal - valorDebito;
         cliente.setSaldoDebito(cliente.getSaldoDebito() - novoValorTotal);
 
-        // Atualizar os dados da venda
         vendaExistente.setValorTotal(novoValorTotal);
-        vendaExistente.setPagamentoDebito(novoValorTotal);
-        vendaExistente.setPagamentoCredito(0); // Crédito não é alterado
-        vendaExistente.setPago(true);
-        vendaExistente.setDataVenda(LocalDateTime.now());
+        vendaExistente.setPagamentoDebito(valorDebito);
+        vendaExistente.setPagamentoCredito(valorCredito);
+        vendaExistente.setValorEmAberto(valorCredito);
 
-        // Atualizar os produtos da venda
+        if (valorCredito == 0) {
+            vendaExistente.setPago(true);
+            vendaExistente.setDataPagamentoDebito(ZonedDateTime.now());
+            vendaExistente.setDataPagamentoCredito(null);
+            vendaExistente.setDataPagamentoFinal(ZonedDateTime.now());
+        } else {
+            vendaExistente.setPago(false);
+            vendaExistente.setDataPagamentoDebito(valorDebito > 0 ? ZonedDateTime.now() : null);
+            vendaExistente.setDataPagamentoCredito(null);
+            vendaExistente.setDataPagamentoFinal(null);
+        }
+
+        // Atualize produtos conforme já implementado
         List<VendaProduto> produtosAtuais = vendaProdutoService.findByVendaId(vendaExistente.getId(), true);
-
-        // Marcar todos os produtos atuais como inativos
         produtosAtuais.forEach(produto -> produto.setAtivo(false));
-
-        // Atualizar ou criar novos registros de produtos
         for (ProdutosDTO produtoDTO : vendaDTO.produtos()) {
             VendaProduto vendaProdutoExistente = produtosAtuais.stream()
                     .filter(produto -> produto.getProduto().getId().equals(produtoDTO.produto().getId()))
@@ -129,13 +139,11 @@ public class VendaService {
                     .orElse(null);
 
             if (vendaProdutoExistente != null) {
-                // Produto já existe, apenas atualiza os valores e reativa
                 vendaProdutoExistente.setQuantidade(produtoDTO.quantidade());
                 vendaProdutoExistente.setValorUnitario(produtoDTO.produto().getValorVenda());
                 vendaProdutoExistente.setValorTotal(produtoDTO.valorTotal());
                 vendaProdutoExistente.setAtivo(true);
             } else {
-                // Produto não existe, cria um novo registro
                 VendaProduto novoVendaProduto = new VendaProduto();
                 novoVendaProduto.setVenda(vendaExistente);
                 novoVendaProduto.setProduto(produtoDTO.produto());
@@ -146,11 +154,8 @@ public class VendaService {
                 vendaProdutoService.salvar(novoVendaProduto);
             }
         }
-
-        // Salvar os produtos atualizados
         produtosAtuais.forEach(vendaProdutoService::salvar);
 
-        // Salvar a venda atualizada
         return vendaRepository.save(vendaExistente);
     }
 
@@ -236,7 +241,7 @@ public class VendaService {
             throw ClienteException.clienteNaoEncontrado();
         }
 
-        Venda ultimaVenda = vendaRepository.findTopByClienteIdOrderByDataVendaDesc(cliente.getId())
+        Venda ultimaVenda = vendaRepository.findTopByClienteIdOrderByDataCriacaoDesc(cliente.getId())
                 .orElseThrow(() -> new RuntimeException("Nenhuma venda encontrada para o cliente com cartão " + codigoCartao));
 
         List<VendaProduto> produtos = vendaProdutoService.findByVendaId(ultimaVenda.getId());

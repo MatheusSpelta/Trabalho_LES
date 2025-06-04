@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -52,7 +53,9 @@ public class RelatorioService {
             List<VendaResponseDTO> vendasFiltradas = vendaService.listarVendasPorClienteId(cliente.getId())
                     .stream()
                     .filter(venda -> {
-                        LocalDate dataVenda = venda.venda().getDataVenda().toLocalDate();
+                        ZonedDateTime dataVendaZoned = venda.venda().getDataCriacao();
+                        if (dataVendaZoned == null) return false;
+                        LocalDate dataVenda = dataVendaZoned.toLocalDate();
                         return (dataVenda.isEqual(inicio) || dataVenda.isAfter(inicio)) &&
                                 (dataVenda.isEqual(fim) || dataVenda.isBefore(fim));
                     })
@@ -73,29 +76,21 @@ public class RelatorioService {
         return new RelatorioTotalDTO(clientesRelatorios, totalVenda, totalCredito, totalDebito);
     }
 
-    public List<ClienteConsumoDTO> clientesAtendidosPorDia(LocalDate data) {
-        LocalDate inicio = data;
-        LocalDate fim = data;
-
+    public List<ClienteConsumoDTO> consumoDiarioPorUsuario(LocalDate data) {
         List<Cliente> clientes = clienteService.findAll();
-        List<ClienteConsumoDTO> clientesConsumo = new ArrayList<>();
-
+        double totalGeral = 0;
+        List<ClienteConsumoDTO> lista = new ArrayList<>();
         for (Cliente cliente : clientes) {
-            double valorConsumido = vendaService.listarVendasPorClienteId(cliente.getId()).stream()
-                    .filter(venda -> {
-                        LocalDate dataVenda = venda.venda().getDataVenda().toLocalDate();
-                        return (dataVenda.isEqual(inicio) || dataVenda.isAfter(inicio)) &&
-                                (dataVenda.isEqual(fim) || dataVenda.isBefore(fim));
-                    })
-                    .mapToDouble(venda -> venda.venda().getValorTotal())
-                    .sum();
-
-            if (valorConsumido > 0) {
-                clientesConsumo.add(new ClienteConsumoDTO(cliente, valorConsumido));
-            }
+            double valor = vendaService.listarVendasPorClienteId(cliente.getId()).stream()
+                    .filter(v -> v.venda().getDataCriacao().toLocalDate().isEqual(data))
+                    .mapToDouble(v -> v.venda().getValorTotal()).sum();
+            totalGeral += valor;
+            lista.add(new ClienteConsumoDTO(cliente, valor, 0, data)); // totalGeral será preenchido depois
         }
-
-        return clientesConsumo;
+        for (ClienteConsumoDTO dto : lista) {
+            lista.set(lista.indexOf(dto), new ClienteConsumoDTO(dto.cliente(), dto.valorConsumido(), totalGeral, dto.data()));
+        }
+        return lista;
     }
 
     public List<Cliente> clientesAniversariantesHoje() {
@@ -113,7 +108,7 @@ public class RelatorioService {
             List<VendaResponseDTO> vendasFiltradas = vendaService.listarVendasPorClienteId(cliente.getId())
                     .stream()
                     .filter(venda -> {
-                        LocalDate dataVenda = venda.venda().getDataVenda().toLocalDate();
+                        LocalDate dataVenda = venda.venda().getDataCriacao().toLocalDate();
                         return (dataVenda.isEqual(inicio) || dataVenda.isAfter(inicio)) &&
                                 (dataVenda.isEqual(fim) || dataVenda.isBefore(fim));
                     })
@@ -132,19 +127,12 @@ public class RelatorioService {
     public List<ClienteRelatorioDetalhadoDTO> obterRelatorioDetalhadoClientes() {
         List<Cliente> clientes = clienteService.findAll();
         List<ClienteRelatorioDetalhadoDTO> relatorio = new ArrayList<>();
-
         for (Cliente cliente : clientes) {
             List<VendaResponseDTO> vendas = vendaService.listarVendasPorClienteId(cliente.getId());
-
-            double valorVendido = vendas.stream()
-                    .mapToDouble(v -> v.venda().getValorTotal())
-                    .sum();
-
+            double valorVendido = vendas.stream().mapToDouble(v -> v.venda().getValorTotal()).sum();
             LocalDate dataUltimaCompra = vendas.stream()
-                    .map(v -> v.venda().getDataVenda().toLocalDate())
-                    .max(LocalDate::compareTo)
-                    .orElse(null);
-
+                    .map(v -> v.venda().getDataCriacao().toLocalDate())
+                    .max(LocalDate::compareTo).orElse(null);
             relatorio.add(new ClienteRelatorioDetalhadoDTO(
                     cliente,
                     valorVendido,
@@ -153,7 +141,6 @@ public class RelatorioService {
                     dataUltimaCompra
             ));
         }
-
         return relatorio;
     }
 
@@ -164,7 +151,7 @@ public class RelatorioService {
 
         List<Venda> vendas = vendaService.listAll().stream()
                 .filter(venda -> {
-                    LocalDate dataVenda = venda.getDataVenda().toLocalDate();
+                    LocalDate dataVenda = venda.getDataCriacao().toLocalDate();
                     return (dataVenda.isEqual(inicio) || dataVenda.isAfter(inicio)) &&
                             (dataVenda.isEqual(fim) || dataVenda.isBefore(fim));
                 })
@@ -242,41 +229,89 @@ public class RelatorioService {
     }
 
     public DreDiarioDTO gerarDreDiario(LocalDate dataInicio, LocalDate dataFim) {
-        LocalDate inicio = dataInicio;
-        LocalDate fim = dataFim;
+        // 1. Calcular saldo anterior
+        double saldoAnterior = 0.0;
+        LocalDate dataSaldo = dataInicio.minusDays(1);
 
-        List<Cliente> clientesAtendidos = clienteService.findAll().stream()
-                .filter(cliente -> vendaService.listarVendasPorClienteId(cliente.getId()).stream()
-                        .anyMatch(venda -> {
-                            LocalDate dataPagamento = venda.venda().getDataPagamento().toLocalDate();
-                            return dataPagamento != null &&
-                                    (dataPagamento.isEqual(inicio) || dataPagamento.isAfter(inicio)) &&
-                                    (dataPagamento.isEqual(fim) || dataPagamento.isBefore(fim));
-                        }))
-                .toList();
+        List<Venda> todasVendas = vendaService.listAll();
+        List<Compra> todasCompras = compraService.findAll();
 
-        double totalRecebido = clientesAtendidos.stream()
-                .flatMap(cliente -> vendaService.listarVendasPorClienteId(cliente.getId()).stream())
-                .filter(venda -> {
-                    LocalDate dataPagamento = venda.venda().getDataPagamento().toLocalDate();
-                    return dataPagamento != null &&
-                            (dataPagamento.isEqual(inicio) || dataPagamento.isAfter(inicio)) &&
-                            (dataPagamento.isEqual(fim) || dataPagamento.isBefore(fim));
+        // Recebidos e pagos até o dia anterior ao início
+        LocalDate dataMinVendas = todasVendas.stream()
+                .map(v -> v.getDataCriacao().toLocalDate())
+                .min(LocalDate::compareTo)
+                .orElse(dataInicio);
+
+        for (LocalDate data = dataMinVendas; data.isBefore(dataInicio); data = data.plusDays(1)) {
+            LocalDate finalData = data;
+            double recebidosDia = todasVendas.stream()
+                    .filter(v -> v.getDataPagamentoDebito() != null && v.getDataPagamentoDebito().toLocalDate().isEqual(finalData))
+                    .mapToDouble(Venda::getPagamentoDebito)
+                    .sum();
+
+            recebidosDia += todasVendas.stream()
+                    .filter(v -> v.getDataPagamentoCredito() != null && v.getDataPagamentoCredito().toLocalDate().isEqual(finalData))
+                    .mapToDouble(Venda::getPagamentoCredito)
+                    .sum();
+
+            double pagosDia = todasCompras.stream()
+                    .filter(c -> c.isPago() && c.getDataPagamento() != null && c.getDataPagamento().toLocalDate().isEqual(finalData))
+                    .mapToDouble(Compra::getValorTotal)
+                    .sum();
+
+            saldoAnterior += (recebidosDia - pagosDia);
+        }
+
+        // 2. Calcular valores no período informado
+        double totalCredito = todasVendas.stream()
+                .filter(v -> v.getPagamentoCredito() > 0 && v.getDataPagamentoCredito() != null)
+                .filter(v -> {
+                    LocalDate data = v.getDataPagamentoCredito().toLocalDate();
+                    return !data.isBefore(dataInicio) && !data.isAfter(dataFim);
                 })
-                .mapToDouble(venda -> venda.venda().getValorTotal())
+                .mapToDouble(Venda::getPagamentoCredito)
                 .sum();
 
-        double totalGasto = compraService.findAll().stream()
-                .filter(compra -> {
-                    LocalDate dataPagamento = compra.getDataPagamento().toLocalDate();
-                    return dataPagamento != null &&
-                            (dataPagamento.isEqual(inicio) || dataPagamento.isAfter(inicio)) &&
-                            (dataPagamento.isEqual(fim) || dataPagamento.isBefore(fim));
+        double totalDebito = todasVendas.stream()
+                .filter(v -> v.getPagamentoDebito() > 0 && v.getDataPagamentoDebito() != null)
+                .filter(v -> {
+                    LocalDate data = v.getDataPagamentoDebito().toLocalDate();
+                    return !data.isBefore(dataInicio) && !data.isAfter(dataFim);
+                })
+                .mapToDouble(Venda::getPagamentoDebito)
+                .sum();
+
+        double totalRecebido = totalDebito + totalCredito;
+
+        double totalPago = todasCompras.stream()
+                .filter(c -> c.isPago() && c.getDataPagamento() != null)
+                .filter(c -> {
+                    LocalDate data = c.getDataPagamento().toLocalDate();
+                    return !data.isBefore(dataInicio) && !data.isAfter(dataFim);
                 })
                 .mapToDouble(Compra::getValorTotal)
                 .sum();
 
-        return new DreDiarioDTO(totalRecebido, totalGasto, clientesAtendidos.size(), clientesAtendidos);
+        long registrosAPagar = todasCompras.stream()
+                .filter(c -> !c.isPago() && c.getDataVencimento() != null)
+                .filter(c -> {
+                    LocalDate data = c.getDataVencimento().toLocalDate();
+                    return !data.isBefore(dataInicio) && !data.isAfter(dataFim);
+                })
+                .count();
+
+        double resultado = totalRecebido - totalPago;
+        double saldoCaixa = saldoAnterior + resultado;
+
+        return new DreDiarioDTO(
+                totalRecebido,
+                totalDebito,
+                totalCredito,
+                totalPago,
+                registrosAPagar,
+                resultado,
+                saldoCaixa
+        );
     }
 
 }

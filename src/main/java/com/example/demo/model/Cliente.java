@@ -13,8 +13,8 @@ import lombok.EqualsAndHashCode;
 @Data
 @Entity
 @EqualsAndHashCode(callSuper = true)
-public class Cliente extends Usuario{
-    
+public class Cliente extends Usuario {
+
     private String cpf;
     private String matricula;
     private Date dataNascimento;
@@ -25,5 +25,5 @@ public class Cliente extends Usuario{
     @Enumerated(EnumType.STRING)
     private StatusCliente statusCliente;
 
-    
+
 }
