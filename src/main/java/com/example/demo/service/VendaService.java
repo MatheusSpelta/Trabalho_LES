@@ -300,6 +300,9 @@ public class VendaService {
                 venda.setValorEmAberto(0);
                 vendaRepository.save(venda);
             }
+            Cliente cliente = clienteService.findById(clienteId);
+            cliente.setSaldoDebito(0);
+            clienteService.salvar(cliente);
         }
     }
 

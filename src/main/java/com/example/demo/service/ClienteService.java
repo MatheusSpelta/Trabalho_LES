@@ -24,6 +24,10 @@ public class ClienteService {
     private final ClienteRepository clienteRepository;
     private final EnderecoService enderecoService;
 
+    public void salvar(Cliente cliente) {
+        clienteRepository.save(cliente);
+    }
+
     @Transactional
     public Cliente saveAll(ClienteDTO clienteDTO) {
         Cliente cliente = clienteDTO.cliente();
