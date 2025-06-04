@@ -1,9 +1,11 @@
 package com.example.demo.controller;
 
+import com.example.demo.DTO.Relatorios.ClienteId;
 import com.example.demo.DTO.Relatorios.DataRequestDTO;
 import com.example.demo.DTO.ValorAbertoDTO;
 import com.example.demo.DTO.VendaDTO;
 import com.example.demo.DTO.VendaResponseDTO;
+import com.example.demo.model.Cliente;
 import com.example.demo.model.Venda;
 import com.example.demo.service.VendaService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -108,5 +110,12 @@ public class VendaController {
     public ResponseEntity<List<ValorAbertoDTO>> listarVendasEmAberto(@RequestBody DataRequestDTO data) {
         List<ValorAbertoDTO> vendasEmAberto = vendaService.listarVendasEmAberto(data);
         return ResponseEntity.ok(vendasEmAberto);
+    }
+
+    @PostMapping("vendas/pagar-vendas")
+    @Operation(description = "Atualiza todas as vendas em aberto do cliente para paga e zera o saldo em credito em aberto do cliente.")
+    public ResponseEntity<Void> pagarVendas(@RequestBody ClienteId cliente) {
+        vendaService.quitarDebito(cliente.clienteId());
+        return ResponseEntity.ok().build();
     }
 }

@@ -290,4 +290,17 @@ public class VendaService {
         return valoresAbertos;
     }
 
+    public void quitarDebito(UUID clienteId) {
+        List<Venda> vendas = vendaRepository.findByClienteId(clienteId);
+        for (Venda venda : vendas) {
+            if (!venda.isPago()) {
+                venda.setPago(true);
+                venda.setDataPagamentoCredito(ZonedDateTime.now());
+                venda.setDataPagamentoFinal(ZonedDateTime.now());
+                venda.setValorEmAberto(0);
+                vendaRepository.save(venda);
+            }
+        }
+    }
+
 }

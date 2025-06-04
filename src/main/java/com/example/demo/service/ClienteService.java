@@ -7,6 +7,7 @@ import com.example.demo.model.Endereco;
 import com.example.demo.repository.ClienteRepository;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.transaction.Transactional;
+import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -17,13 +18,11 @@ import java.util.UUID;
 
 @Service
 @Tag(name = "cliente", description = "Fornece serviços web REST para acesso e manipualação de Clientes.")
+@AllArgsConstructor
 public class ClienteService {
 
-    @Autowired
-    private ClienteRepository clienteRepository;
-
-    @Autowired
-    private EnderecoService enderecoService;
+    private final ClienteRepository clienteRepository;
+    private final EnderecoService enderecoService;
 
     @Transactional
     public Cliente saveAll(ClienteDTO clienteDTO) {
