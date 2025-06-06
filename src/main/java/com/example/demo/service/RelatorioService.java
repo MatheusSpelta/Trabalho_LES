@@ -269,16 +269,15 @@ public class RelatorioService {
     private static double getSaldoAnterior(LocalDate dataInicio, List<Venda> todasVendas, List<Compra> todasCompras) {
         double saldoAnterior = 0.0;
 
-        // Calcula saldo anterior ao período
         for (Venda v : todasVendas) {
-            if (v.getDataPagamentoDebito() != null && v.getDataPagamentoDebito().toLocalDate().isBefore(dataInicio))
-                saldoAnterior += v.getPagamentoDebito();
-            if (v.getDataPagamentoCredito() != null && v.getDataPagamentoCredito().toLocalDate().isBefore(dataInicio))
-                saldoAnterior += v.getPagamentoCredito();
+            if (v.isPago() && v.getDataPagamentoFinal() != null && v.getDataPagamentoFinal().toLocalDate().isBefore(dataInicio)) {
+                saldoAnterior += v.getValorTotal();
+            }
         }
         for (Compra c : todasCompras) {
-            if (c.isPago() && c.getDataPagamento() != null && c.getDataPagamento().toLocalDate().isBefore(dataInicio))
+            if (c.isPago() && c.getDataPagamento() != null && c.getDataPagamento().toLocalDate().isBefore(dataInicio)) {
                 saldoAnterior -= c.getValorTotal();
+            }
         }
         return saldoAnterior;
     }
