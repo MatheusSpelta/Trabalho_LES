@@ -260,7 +260,7 @@ public class RelatorioService {
                     valorPagar,
                     resultado,
                     saldoDia,
-                    dataFinal.equals(dataInicio) ? saldoAnterior : 0
+                    dataFinal.equals(dataInicio) ? saldoAnterior : null
             ));
         }
         return new DreDiarioDTO(relatorio, saldoAnterior);
