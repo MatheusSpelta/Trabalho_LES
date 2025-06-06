@@ -228,10 +228,10 @@ public class RelatorioService {
         return new RelatorioCompraDTO(comprasApagar, comprasPagas, comprasVencidas, totalApagar, totalPago, totalVencido);
     }
 
-    public List<DreDiarioDTO> gerarDreDiarioPorPeriodo(LocalDate dataInicio, LocalDate dataFim) {
+    public DreDiarioDTO gerarDreDiarioPorPeriodo(LocalDate dataInicio, LocalDate dataFim) {
         List<Venda> todasVendas = vendaService.listAll();
         List<Compra> todasCompras = compraService.findAll();
-        List<DreDiarioDTO> relatorio = new ArrayList<>();
+        List<DreDiarioDTO.DreDiarioDias> relatorio = new ArrayList<>();
         double saldoAnterior = 0.0;
 
         // Calcula saldo anterior ao período
@@ -249,7 +249,7 @@ public class RelatorioService {
         double saldoDia = saldoAnterior;
 
         for (LocalDate data = dataInicio; !data.isAfter(dataFim); data = data.plusDays(1)) {
-            final LocalDate dataFinal = data; // Necessário para uso em lambda
+            final LocalDate dataFinal = data;
 
             double valorReceber = todasVendas.stream()
                     .filter(v -> (v.getDataPagamentoDebito() != null && v.getDataPagamentoDebito().toLocalDate().isEqual(dataFinal)) ||
@@ -268,16 +268,16 @@ public class RelatorioService {
             double resultado = valorReceber - valorPagar;
             saldoDia += resultado;
 
-            relatorio.add(new DreDiarioDTO(
+            relatorio.add(new DreDiarioDTO.DreDiarioDias(
                     dataFinal,
                     valorReceber,
                     valorPagar,
                     resultado,
                     saldoDia,
-                    dataFinal.equals(dataInicio) ? saldoAnterior : null // saldoAnterior só no primeiro dia
+                    dataFinal.equals(dataInicio) ? saldoAnterior : null
             ));
         }
-        return relatorio;
+        return new DreDiarioDTO(relatorio, saldoAnterior);
     }
 
 }

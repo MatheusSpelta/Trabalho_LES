@@ -6,11 +6,17 @@ import java.time.LocalDate;
 import java.util.List;
 
 public record DreDiarioDTO(
-        LocalDate data,
-        double valorReceber,
-        double valorPagar,
-        double resultado,
-        double saldo,
-        Double saldoAnterior // pode ser null exceto no primeiro dia
+        List<DreDiarioDias> dreDias,
+        double saldoAnterior
 ) {
+    public record DreDiarioDias(
+            LocalDate data,
+            double valorReceber,
+            double valorPagar,
+            double resultado,
+            double saldo,
+            double saldoAnterior
+    ) {
+
+    }
 }
