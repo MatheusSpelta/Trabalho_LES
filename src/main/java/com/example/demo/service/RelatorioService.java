@@ -228,90 +228,56 @@ public class RelatorioService {
         return new RelatorioCompraDTO(comprasApagar, comprasPagas, comprasVencidas, totalApagar, totalPago, totalVencido);
     }
 
-    public DreDiarioDTO gerarDreDiario(LocalDate dataInicio, LocalDate dataFim) {
-        // 1. Calcular saldo anterior
-        double saldoAnterior = 0.0;
-        LocalDate dataSaldo = dataInicio.minusDays(1);
-
+    public List<DreDiarioDTO> gerarDreDiarioPorPeriodo(LocalDate dataInicio, LocalDate dataFim) {
         List<Venda> todasVendas = vendaService.listAll();
         List<Compra> todasCompras = compraService.findAll();
+        List<DreDiarioDTO> relatorio = new ArrayList<>();
+        double saldoAnterior = 0.0;
 
-        // Recebidos e pagos até o dia anterior ao início
-        LocalDate dataMinVendas = todasVendas.stream()
-                .map(v -> v.getDataCriacao().toLocalDate())
-                .min(LocalDate::compareTo)
-                .orElse(dataInicio);
+        // Calcula saldo anterior ao período
+        for (Venda v : todasVendas) {
+            if (v.getDataPagamentoDebito() != null && v.getDataPagamentoDebito().toLocalDate().isBefore(dataInicio))
+                saldoAnterior += v.getPagamentoDebito();
+            if (v.getDataPagamentoCredito() != null && v.getDataPagamentoCredito().toLocalDate().isBefore(dataInicio))
+                saldoAnterior += v.getPagamentoCredito();
+        }
+        for (Compra c : todasCompras) {
+            if (c.isPago() && c.getDataPagamento() != null && c.getDataPagamento().toLocalDate().isBefore(dataInicio))
+                saldoAnterior -= c.getValorTotal();
+        }
 
-        for (LocalDate data = dataMinVendas; data.isBefore(dataInicio); data = data.plusDays(1)) {
-            LocalDate finalData = data;
-            double recebidosDia = todasVendas.stream()
-                    .filter(v -> v.getDataPagamentoDebito() != null && v.getDataPagamentoDebito().toLocalDate().isEqual(finalData))
-                    .mapToDouble(Venda::getPagamentoDebito)
-                    .sum();
+        double saldoDia = saldoAnterior;
 
-            recebidosDia += todasVendas.stream()
-                    .filter(v -> v.getDataPagamentoCredito() != null && v.getDataPagamentoCredito().toLocalDate().isEqual(finalData))
-                    .mapToDouble(Venda::getPagamentoCredito)
-                    .sum();
+        for (LocalDate data = dataInicio; !data.isAfter(dataFim); data = data.plusDays(1)) {
+            final LocalDate dataFinal = data; // Necessário para uso em lambda
 
-            double pagosDia = todasCompras.stream()
-                    .filter(c -> c.isPago() && c.getDataPagamento() != null && c.getDataPagamento().toLocalDate().isEqual(finalData))
+            double valorReceber = todasVendas.stream()
+                    .filter(v -> (v.getDataPagamentoDebito() != null && v.getDataPagamentoDebito().toLocalDate().isEqual(dataFinal)) ||
+                            (v.getDataPagamentoCredito() != null && v.getDataPagamentoCredito().toLocalDate().isEqual(dataFinal)))
+                    .mapToDouble(v -> {
+                        double debito = (v.getDataPagamentoDebito() != null && v.getDataPagamentoDebito().toLocalDate().isEqual(dataFinal)) ? v.getPagamentoDebito() : 0.0;
+                        double credito = (v.getDataPagamentoCredito() != null && v.getDataPagamentoCredito().toLocalDate().isEqual(dataFinal)) ? v.getPagamentoCredito() : 0.0;
+                        return debito + credito;
+                    }).sum();
+
+            double valorPagar = todasCompras.stream()
+                    .filter(c -> c.isPago() && c.getDataPagamento() != null && c.getDataPagamento().toLocalDate().isEqual(dataFinal))
                     .mapToDouble(Compra::getValorTotal)
                     .sum();
 
-            saldoAnterior += (recebidosDia - pagosDia);
+            double resultado = valorReceber - valorPagar;
+            saldoDia += resultado;
+
+            relatorio.add(new DreDiarioDTO(
+                    dataFinal,
+                    valorReceber,
+                    valorPagar,
+                    resultado,
+                    saldoDia,
+                    dataFinal.equals(dataInicio) ? saldoAnterior : null // saldoAnterior só no primeiro dia
+            ));
         }
-
-        // 2. Calcular valores no período informado
-        double totalCredito = todasVendas.stream()
-                .filter(v -> v.getPagamentoCredito() > 0 && v.getDataPagamentoCredito() != null)
-                .filter(v -> {
-                    LocalDate data = v.getDataPagamentoCredito().toLocalDate();
-                    return !data.isBefore(dataInicio) && !data.isAfter(dataFim);
-                })
-                .mapToDouble(Venda::getPagamentoCredito)
-                .sum();
-
-        double totalDebito = todasVendas.stream()
-                .filter(v -> v.getPagamentoDebito() > 0 && v.getDataPagamentoDebito() != null)
-                .filter(v -> {
-                    LocalDate data = v.getDataPagamentoDebito().toLocalDate();
-                    return !data.isBefore(dataInicio) && !data.isAfter(dataFim);
-                })
-                .mapToDouble(Venda::getPagamentoDebito)
-                .sum();
-
-        double totalRecebido = totalDebito + totalCredito;
-
-        double totalPago = todasCompras.stream()
-                .filter(c -> c.isPago() && c.getDataPagamento() != null)
-                .filter(c -> {
-                    LocalDate data = c.getDataPagamento().toLocalDate();
-                    return !data.isBefore(dataInicio) && !data.isAfter(dataFim);
-                })
-                .mapToDouble(Compra::getValorTotal)
-                .sum();
-
-        long registrosAPagar = todasCompras.stream()
-                .filter(c -> !c.isPago() && c.getDataVencimento() != null)
-                .filter(c -> {
-                    LocalDate data = c.getDataVencimento().toLocalDate();
-                    return !data.isBefore(dataInicio) && !data.isAfter(dataFim);
-                })
-                .count();
-
-        double resultado = totalRecebido - totalPago;
-        double saldoCaixa = saldoAnterior + resultado;
-
-        return new DreDiarioDTO(
-                totalRecebido,
-                totalDebito,
-                totalCredito,
-                totalPago,
-                registrosAPagar,
-                resultado,
-                saldoCaixa
-        );
+        return relatorio;
     }
 
 }

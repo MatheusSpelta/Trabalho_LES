@@ -301,7 +301,7 @@ public class VendaService {
                 vendaRepository.save(venda);
             }
             Cliente cliente = clienteService.findById(clienteId);
-            cliente.setSaldoDebito(0);
+            cliente.setSaldoDebito(0.0);
             clienteService.salvar(cliente);
         }
     }

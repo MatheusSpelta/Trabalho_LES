@@ -68,9 +68,9 @@ class RelatoriosController {
 
     @PostMapping("/dre")
     @Operation(description = "Retorna o DRE de um periodo expecifico")
-    public DreDiarioDTO relatorioDRE(@RequestBody DataRequestDTO request) {
+    public List<DreDiarioDTO> relatorioDRE(@RequestBody DataRequestDTO request) {
         System.out.println(request);
-        return relatoriosService.gerarDreDiario(request.getDataInicio(), request.getDataFim());
+        return relatoriosService.gerarDreDiarioPorPeriodo(request.getDataInicio(), request.getDataFim());
     }
 }
 
