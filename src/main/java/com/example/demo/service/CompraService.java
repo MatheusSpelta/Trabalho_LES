@@ -1,5 +1,6 @@
 package com.example.demo.service;
 
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
@@ -61,7 +62,7 @@ public class CompraService {
     public void changeIsPago(UUID id) throws RelationTypeNotFoundException {
         Compra compra = compraRepository.findById(id)
                 .orElseThrow(() -> new RelationTypeNotFoundException("Compra com id " + id + " não encontrado."));
-
+        compra.setDataPagamento(LocalDateTime.now());
         compra.setPago(!compra.isPago());
         compraRepository.save(compra);
     }
