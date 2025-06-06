@@ -25,9 +25,9 @@ public class ClienteService {
     private final ClienteRepository clienteRepository;
     private final EnderecoService enderecoService;
 
-    public void salvar(Cliente cliente) {
+    public Cliente salvar(Cliente cliente) {
         cliente.setUltimaAlteracao(ZonedDateTime.now().toLocalDateTime());
-        clienteRepository.save(cliente);
+        return clienteRepository.save(cliente);
     }
 
     @Transactional

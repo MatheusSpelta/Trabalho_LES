@@ -290,8 +290,12 @@ public class VendaService {
         return valoresAbertos;
     }
 
-    public void quitarDebito(UUID clienteId) {
+    public Cliente quitarDebito(UUID clienteId) {
         List<Venda> vendas = vendaRepository.findByClienteId(clienteId);
+        Cliente cliente = clienteService.findById(clienteId);
+        if (cliente == null) {
+            throw new IllegalArgumentException("Cliente não encontrado!");
+        }
         for (Venda venda : vendas) {
             if (!venda.isPago()) {
                 venda.setPago(true);
@@ -300,10 +304,10 @@ public class VendaService {
                 venda.setValorEmAberto(0);
                 vendaRepository.save(venda);
             }
-            Cliente cliente = clienteService.findById(clienteId);
             cliente.setSaldoDebito(0.0);
-            clienteService.salvar(cliente);
+
         }
+        return clienteService.salvar(cliente);
     }
 
 }

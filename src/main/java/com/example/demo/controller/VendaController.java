@@ -114,8 +114,8 @@ public class VendaController {
 
     @PostMapping("vendas/pagar-vendas")
     @Operation(description = "Atualiza todas as vendas em aberto do cliente para paga e zera o saldo em credito em aberto do cliente.")
-    public ResponseEntity<Void> pagarVendas(@RequestBody ClienteId cliente) {
-        vendaService.quitarDebito(cliente.clienteId());
-        return ResponseEntity.ok().build();
+    public ResponseEntity<Cliente> pagarVendas(@RequestBody ClienteId cliente) {
+        return ResponseEntity.ok(vendaService.quitarDebito(cliente.clienteId()));
+
     }
 }
