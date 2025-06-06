@@ -232,19 +232,7 @@ public class RelatorioService {
         List<Venda> todasVendas = vendaService.listAll();
         List<Compra> todasCompras = compraService.findAll();
         List<DreDiarioDTO.DreDiarioDias> relatorio = new ArrayList<>();
-        double saldoAnterior = 0.0;
-
-        // Calcula saldo anterior ao período
-        for (Venda v : todasVendas) {
-            if (v.getDataPagamentoDebito() != null && v.getDataPagamentoDebito().toLocalDate().isBefore(dataInicio))
-                saldoAnterior += v.getPagamentoDebito();
-            if (v.getDataPagamentoCredito() != null && v.getDataPagamentoCredito().toLocalDate().isBefore(dataInicio))
-                saldoAnterior += v.getPagamentoCredito();
-        }
-        for (Compra c : todasCompras) {
-            if (c.isPago() && c.getDataPagamento() != null && c.getDataPagamento().toLocalDate().isBefore(dataInicio))
-                saldoAnterior -= c.getValorTotal();
-        }
+        double saldoAnterior = getSaldoAnterior(dataInicio, todasVendas, todasCompras);
 
         double saldoDia = saldoAnterior;
 
@@ -278,6 +266,23 @@ public class RelatorioService {
             ));
         }
         return new DreDiarioDTO(relatorio, saldoAnterior);
+    }
+
+    private static double getSaldoAnterior(LocalDate dataInicio, List<Venda> todasVendas, List<Compra> todasCompras) {
+        double saldoAnterior = 0.0;
+
+        // Calcula saldo anterior ao período
+        for (Venda v : todasVendas) {
+            if (v.getDataPagamentoDebito() != null && v.getDataPagamentoDebito().toLocalDate().isBefore(dataInicio))
+                saldoAnterior += v.getPagamentoDebito();
+            if (v.getDataPagamentoCredito() != null && v.getDataPagamentoCredito().toLocalDate().isBefore(dataInicio))
+                saldoAnterior += v.getPagamentoCredito();
+        }
+        for (Compra c : todasCompras) {
+            if (c.isPago() && c.getDataPagamento() != null && c.getDataPagamento().toLocalDate().isBefore(dataInicio))
+                saldoAnterior -= c.getValorTotal();
+        }
+        return saldoAnterior;
     }
 
 }

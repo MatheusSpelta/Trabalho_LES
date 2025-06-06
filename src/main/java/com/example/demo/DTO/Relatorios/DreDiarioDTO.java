@@ -15,7 +15,7 @@ public record DreDiarioDTO(
             double valorPagar,
             double resultado,
             double saldo,
-            double saldoAnterior
+            Double saldoAnterior
     ) {
 
     }
