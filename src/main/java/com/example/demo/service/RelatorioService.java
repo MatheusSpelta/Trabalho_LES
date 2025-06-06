@@ -240,13 +240,11 @@ public class RelatorioService {
             final LocalDate dataFinal = data;
 
             double valorReceber = todasVendas.stream()
-                    .filter(v -> (v.getDataPagamentoDebito() != null && v.getDataPagamentoDebito().toLocalDate().isEqual(dataFinal)) ||
-                            (v.getDataPagamentoCredito() != null && v.getDataPagamentoCredito().toLocalDate().isEqual(dataFinal)))
-                    .mapToDouble(v -> {
-                        double debito = (v.getDataPagamentoDebito() != null && v.getDataPagamentoDebito().toLocalDate().isEqual(dataFinal)) ? v.getPagamentoDebito() : 0.0;
-                        double credito = (v.getDataPagamentoCredito() != null && v.getDataPagamentoCredito().toLocalDate().isEqual(dataFinal)) ? v.getPagamentoCredito() : 0.0;
-                        return debito + credito;
-                    }).sum();
+                    .filter(v -> v.isPago() &&
+                            v.getDataPagamentoFinal() != null &&
+                            v.getDataPagamentoFinal().toLocalDate().isEqual(dataFinal))
+                    .mapToDouble(Venda::getValorTotal)
+                    .sum();
 
             double valorPagar = todasCompras.stream()
                     .filter(c -> c.isPago() && c.getDataPagamento() != null && c.getDataPagamento().toLocalDate().isEqual(dataFinal))
@@ -262,7 +260,7 @@ public class RelatorioService {
                     valorPagar,
                     resultado,
                     saldoDia,
-                    dataFinal.equals(dataInicio) ? saldoAnterior : null
+                    dataFinal.equals(dataInicio) ? saldoAnterior : 0
             ));
         }
         return new DreDiarioDTO(relatorio, saldoAnterior);
