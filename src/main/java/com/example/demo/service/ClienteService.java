@@ -117,13 +117,24 @@ public class ClienteService {
     }
 
     public Cliente findByCartao(String cartao) {
-        return clienteRepository.findByCartao(cartao)
+        Cliente cliente = clienteRepository.findByCartao(cartao)
                 .orElseThrow(ClienteException::cartaoNaoEncontrado);
+
+        if (cliente.getSaldoDebito() <= -cliente.getLimiteCredito()) {
+            throw new IllegalArgumentException("Saldo indisponivel");
+        }
+        ZonedDateTime dataLimite = ZonedDateTime.now().minusDays(30);
+        if (clienteRepository.existsVendaNaoPagaNosUltimosDias(cliente.getId(), dataLimite)) {
+            throw new IllegalArgumentException("Ha vendas em aberto vencidas! Favor realizar pagamento");
+        }
+
+        return cliente;
     }
 
     public List<Cliente> findClientesAniversariantesHoje() {
         LocalDate hoje = LocalDate.now();
         return clienteRepository.findClientesAniversariantes(hoje.getMonthValue(), hoje.getDayOfMonth());
     }
+
 
 }
