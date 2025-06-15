@@ -166,7 +166,7 @@ public class FuncionarioService {
         }
     }
 
-    public List<FuncionarioListDto> findAll() {
+    public List<FuncionarioListDto> findAllWithPermissao() {
         List<FuncionarioListDto> list = new ArrayList<>();
         List<Funcionario> funcionarios = funcionarioRepository.findAll();
         for (Funcionario funcionario : funcionarios) {
@@ -174,6 +174,10 @@ public class FuncionarioService {
             list.add(new FuncionarioListDto(funcionario, permissoes));
         }
         return list;
+    }
+
+    public List<Funcionario> findAll() {
+        return funcionarioRepository.findAll();
     }
 
     public Funcionario findById(UUID id) {

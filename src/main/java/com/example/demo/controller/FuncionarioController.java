@@ -72,7 +72,7 @@ public class FuncionarioController {
             @ApiResponse(responseCode = "500", description = "Caso não tenha sido possível realizar a operação.")
     })
     public List<FuncionarioListDto> listarTodos() {
-        return funcionarioService.findAll();
+        return funcionarioService.findAllWithPermissao();
     }
 
     @GetMapping("/buscar/{id}")
