@@ -75,7 +75,7 @@ public class TcpServer implements Runnable {
 
 
             String resposta = String.format(
-                    "Cartao: %s\r\nMatricula: %s\r\nDebito: RS %.2f\r\nCredito: RS %.2f",
+                    "Cartao: %s\r\nMatricula: %s\r\nSaldo: RS %.2f\r\nLimite: RS %.2f",
                     codigo, cliente.getMatricula(), cliente.getSaldoDebito(), cliente.getLimiteCredito());
 
             System.out.println(resposta);

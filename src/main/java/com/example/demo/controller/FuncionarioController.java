@@ -5,6 +5,7 @@ import java.util.UUID;
 
 import javax.management.relation.RelationTypeNotFoundException;
 
+import com.example.demo.DTO.Relatorios.FuncionarioListDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -70,7 +71,7 @@ public class FuncionarioController {
             @ApiResponse(responseCode = "200", description = "Caso os Funcionarios sejam listados com sucesso."),
             @ApiResponse(responseCode = "500", description = "Caso não tenha sido possível realizar a operação.")
     })
-    public List<Funcionario> listarTodos() {
+    public List<FuncionarioListDto> listarTodos() {
         return funcionarioService.findAll();
     }
 

@@ -1,10 +1,13 @@
 package com.example.demo.service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
 import javax.management.relation.RelationTypeNotFoundException;
 
+import com.example.demo.DTO.Relatorios.FuncionarioListDto;
+import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -28,28 +31,16 @@ import jakarta.transaction.Transactional;
 
 @Service
 @Tag(name = "Funcionario", description = "Fornece serviços web REST para acesso e manipulação de dados de Funcionarios")
+@AllArgsConstructor
 public class FuncionarioService {
 
-    @Autowired
-    private FuncionarioRepository funcionarioRepository;
-
-    @Autowired
-    private EnderecoService enderecoService;
-
-    @Autowired
-    private PasswordEncoder passwordEncoder;
-
-    @Autowired
-    private JwtUtil jwtUtil;
-
-    @Autowired
-    private TipoPermissaoService tipoPermissaoService;
-
-    @Autowired
-    private PermissaoService permissaoService;
-
-    @Autowired
-    private InterfacePermissaoService interfacePermissaoService;
+    private final FuncionarioRepository funcionarioRepository;
+    private final EnderecoService enderecoService;
+    private final PasswordEncoder passwordEncoder;
+    private final JwtUtil jwtUtil;
+    private final TipoPermissaoService tipoPermissaoService;
+    private final PermissaoService permissaoService;
+    private final InterfacePermissaoService interfacePermissaoService;
 
     @Transactional
     public Funcionario saveAll(FuncionarioDTO funcionarioDTO) {
@@ -101,9 +92,9 @@ public class FuncionarioService {
 
     private Permissao ajustarPermissao(Funcionario funcionario, Permissao permissaoDTO) {
         Permissao permissao = permissaoService.findByFuncionarioAndTipoPermissaoAndInterfacePermissao(
-                funcionario.getId(),
-                permissaoDTO.getTipoPermissao().getId(),
-                permissaoDTO.getInterfacePermissao().getId())
+                        funcionario.getId(),
+                        permissaoDTO.getTipoPermissao().getId(),
+                        permissaoDTO.getInterfacePermissao().getId())
                 .orElseThrow(PermissaoException::permissaoNaoEncotnrada); // Usando PermissaoException personalizada
 
         permissao.setAtivo(permissaoDTO.isAtivo());
@@ -175,8 +166,14 @@ public class FuncionarioService {
         }
     }
 
-    public List<Funcionario> findAll() {
-        return funcionarioRepository.findAll();
+    public List<FuncionarioListDto> findAll() {
+        List<FuncionarioListDto> list = new ArrayList<>();
+        List<Funcionario> funcionarios = funcionarioRepository.findAll();
+        for (Funcionario funcionario : funcionarios) {
+            List<Permissao> permissoes = permissaoService.findByFuncionario(funcionario.getId());
+            list.add(new FuncionarioListDto(funcionario, permissoes));
+        }
+        return list;
     }
 
     public Funcionario findById(UUID id) {
