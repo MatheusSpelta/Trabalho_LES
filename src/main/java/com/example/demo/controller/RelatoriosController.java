@@ -50,8 +50,8 @@ class RelatoriosController {
 
     @PostMapping("/vendas-diaria")
     @Operation(description = "Retorna o total de vendas do dia.")
-    public RelatorioTotalDTO vendasDiaria(@RequestBody LocalDate data) {
-        return relatoriosService.obterVendasDiaria(data);
+    public List<VendaDiariaDTO> vendasDiaria(@RequestBody LocalDate data) {
+        return relatoriosService.obterVendasDiariaDetalhada(data);
     }
 
     @PostMapping("/relatorio-produtos")

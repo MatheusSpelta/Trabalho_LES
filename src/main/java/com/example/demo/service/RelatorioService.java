@@ -38,42 +38,18 @@ public class RelatorioService {
         return new ClienteRelatorioDTO(cliente, vendas, total, totalCredito, totalDebito);
     }
 
-    public RelatorioTotalDTO obterVendasDiaria(LocalDate data) {
-        LocalDate inicio = data;
-        LocalDate fim = data;
+    public List<VendaDiariaDTO> obterVendasDiariaDetalhada(LocalDate data) {
+        List<Venda> todasVendas = vendaService.listAll().stream()
+                .filter(v -> v.getDataCriacao().toLocalDate().isEqual(data))
+                .toList();
 
-        List<Cliente> clientes = clienteService.findAll();
-        List<ClienteRelatorioDTO> clientesRelatorios = new ArrayList<>();
-
-        double totalVenda = 0.0;
-        double totalCredito = 0.0;
-        double totalDebito = 0.0;
-
-        for (Cliente cliente : clientes) {
-            List<VendaResponseDTO> vendasFiltradas = vendaService.listarVendasPorClienteId(cliente.getId())
-                    .stream()
-                    .filter(venda -> {
-                        ZonedDateTime dataVendaZoned = venda.venda().getDataCriacao();
-                        if (dataVendaZoned == null) return false;
-                        LocalDate dataVenda = dataVendaZoned.toLocalDate();
-                        return (dataVenda.isEqual(inicio) || dataVenda.isAfter(inicio)) &&
-                                (dataVenda.isEqual(fim) || dataVenda.isBefore(fim));
-                    })
-                    .collect(Collectors.toList());
-
-            double totalCliente = vendasFiltradas.stream().mapToDouble(v -> v.venda().getValorTotal()).sum();
-            double totalCreditoCliente = vendasFiltradas.stream().mapToDouble(v -> v.venda().getPagamentoCredito()).sum();
-            double totalDebitoCliente = vendasFiltradas.stream().mapToDouble(v -> v.venda().getPagamentoDebito()).sum();
-
-            ClienteRelatorioDTO clienteRelatorio = new ClienteRelatorioDTO(cliente, vendasFiltradas, totalCliente, totalCreditoCliente, totalDebitoCliente);
-            totalVenda += totalCliente;
-            totalCredito += totalCreditoCliente;
-            totalDebito += totalDebitoCliente;
-
-            clientesRelatorios.add(clienteRelatorio);
-        }
-
-        return new RelatorioTotalDTO(clientesRelatorios, totalVenda, totalCredito, totalDebito);
+        return todasVendas.stream()
+                .map(v -> new VendaDiariaDTO(
+                        v.getCliente().getNome(), // ou outro campo desejado
+                        v.getValorTotal(),
+                        v.getDataCriacao()
+                ))
+                .toList();
     }
 
     public List<ClienteConsumoDTO> consumoDiarioPorUsuario(LocalDate data) {
