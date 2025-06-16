@@ -116,9 +116,8 @@ public class ClienteService {
     }
 
     public Cliente findByCartao(String cartao) {
-        Cliente cliente = clienteRepository.findByCartao(cartao)
+        return clienteRepository.findByCartao(cartao)
                 .orElseThrow(ClienteException::cartaoNaoEncontrado);
-        return cliente;
     }
 
     public Cliente entrarRefeitorio(String cartao) {
