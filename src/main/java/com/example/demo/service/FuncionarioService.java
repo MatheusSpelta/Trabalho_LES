@@ -6,10 +6,9 @@ import java.util.UUID;
 
 import javax.management.relation.RelationTypeNotFoundException;
 
-import com.example.demo.DTO.Relatorios.FuncionarioEditDto;
-import com.example.demo.DTO.Relatorios.FuncionarioListDto;
+import com.example.demo.DTO.FuncionarioEditDto;
+import com.example.demo.DTO.FuncionarioListDto;
 import lombok.AllArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;

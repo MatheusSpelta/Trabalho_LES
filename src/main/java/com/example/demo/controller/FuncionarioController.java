@@ -5,8 +5,8 @@ import java.util.UUID;
 
 import javax.management.relation.RelationTypeNotFoundException;
 
-import com.example.demo.DTO.Relatorios.FuncionarioEditDto;
-import com.example.demo.DTO.Relatorios.FuncionarioListDto;
+import com.example.demo.DTO.FuncionarioEditDto;
+import com.example.demo.DTO.FuncionarioListDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
