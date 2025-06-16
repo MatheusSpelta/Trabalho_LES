@@ -8,7 +8,6 @@ import com.example.demo.repository.ClienteRepository;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.management.relation.RelationTypeNotFoundException;
@@ -119,7 +118,11 @@ public class ClienteService {
     public Cliente findByCartao(String cartao) {
         Cliente cliente = clienteRepository.findByCartao(cartao)
                 .orElseThrow(ClienteException::cartaoNaoEncontrado);
+        return cliente;
+    }
 
+    public Cliente entrarRefeitorio(String cartao) {
+        Cliente cliente = clienteRepository.findByCartao(cartao).orElseThrow(ClienteException::cartaoJaCadastrado);
         if (cliente.getSaldoDebito() <= -cliente.getLimiteCredito()) {
             throw new IllegalArgumentException("Saldo indisponivel");
         }
@@ -127,7 +130,6 @@ public class ClienteService {
         if (clienteRepository.existsVendaNaoPagaNosUltimosDias(cliente.getId(), dataLimite)) {
             throw new IllegalArgumentException("Ha vendas em aberto vencidas! Favor realizar pagamento");
         }
-
         return cliente;
     }
 
