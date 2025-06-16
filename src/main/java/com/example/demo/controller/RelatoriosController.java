@@ -40,7 +40,7 @@ class RelatoriosController {
     @PostMapping("/relatorio-diario")
     @Operation(description = "Retorna a lista de clientes atendidos por dia.")
     public List<Venda> relatorioDiario(@RequestBody LocalDate data) {
-        return relatoriosService.listarVendasPorData(data);
+        return relatoriosService.obterVendasDiariaDetalhada(data);
     }
 
     @GetMapping("/vendas-cliente/{clienteId}")
@@ -51,8 +51,8 @@ class RelatoriosController {
 
     @PostMapping("/vendas-diaria")
     @Operation(description = "Retorna o total de vendas do dia.")
-    public List<Venda> vendasDiaria(@RequestBody LocalDate data) {
-        return relatoriosService.listarVendasPorData(data);
+    public List<ClienteConsumoDTO> vendasDiaria(@RequestBody LocalDate data) {
+        return relatoriosService.consumoDiarioPorUsuario(data);
     }
 
     @PostMapping("/relatorio-produtos")
