@@ -113,7 +113,7 @@ public class FuncionarioController {
             @ApiResponse(responseCode = "500", description = "Caso não tenha sido possível realizar a operação.")
     })
     public List<Permissao> me(@PathVariable UUID id) {
-        Funcionario funcionario = funcionarioService.findById(id);
+        Funcionario funcionario = funcionarioService.findFuncionario(id);
         List<Permissao> permissoes = permissaoService.findByFuncionario(funcionario.getId());
         return permissoes;
     }

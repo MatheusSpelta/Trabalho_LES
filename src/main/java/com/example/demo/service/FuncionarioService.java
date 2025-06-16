@@ -188,6 +188,11 @@ public class FuncionarioService {
         return new FuncionarioEditDto(funcionario, permissoes);
     }
 
+    public Funcionario findFuncionario(UUID id) {
+        return funcionarioRepository.findById(id)
+                .orElseThrow(FuncionarioException::funcionarioNaoEncontrado);
+    }
+
     public void changeAtivo(UUID id) {
         Funcionario funcionario = funcionarioRepository.findById(id)
                 .orElseThrow(FuncionarioException::funcionarioNaoEncontrado);
