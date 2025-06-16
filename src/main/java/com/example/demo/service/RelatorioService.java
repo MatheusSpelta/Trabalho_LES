@@ -39,7 +39,7 @@ public class RelatorioService {
     }
 
     public List<Venda> obterVendasDiariaDetalhada(LocalDate data) {
-        List<Venda> vendas = vendaService.listAll().stream()
+        return vendaService.listAll().stream()
                 .filter(v -> v.getDataCriacao().toLocalDate().isEqual(data))
                 .collect(Collectors.toList());
     }
