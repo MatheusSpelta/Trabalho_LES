@@ -2,6 +2,7 @@ package com.example.demo.controller;
 
 import com.example.demo.DTO.Relatorios.*;
 import com.example.demo.model.Cliente;
+import com.example.demo.model.Venda;
 import com.example.demo.service.RelatorioService;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.AllArgsConstructor;
@@ -38,8 +39,8 @@ class RelatoriosController {
 
     @PostMapping("/relatorio-diario")
     @Operation(description = "Retorna a lista de clientes atendidos por dia.")
-    public List<ClienteConsumoDTO> relatorioDiario(@RequestBody LocalDate data) {
-        return relatoriosService.consumoDiarioPorUsuario(data);
+    public List<Venda> relatorioDiario(@RequestBody LocalDate data) {
+        return relatoriosService.listarVendasPorData(data);
     }
 
     @GetMapping("/vendas-cliente/{clienteId}")

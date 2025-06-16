@@ -52,21 +52,10 @@ public class RelatorioService {
                 .toList();
     }
 
-    public List<ClienteConsumoDTO> consumoDiarioPorUsuario(LocalDate data) {
-        List<Cliente> clientes = clienteService.findAll();
-        double totalGeral = 0;
-        List<ClienteConsumoDTO> lista = new ArrayList<>();
-        for (Cliente cliente : clientes) {
-            double valor = vendaService.listarVendasPorClienteId(cliente.getId()).stream()
-                    .filter(v -> v.venda().getDataCriacao().toLocalDate().isEqual(data))
-                    .mapToDouble(v -> v.venda().getValorTotal()).sum();
-            totalGeral += valor;
-            lista.add(new ClienteConsumoDTO(cliente, valor, 0, data)); // totalGeral será preenchido depois
-        }
-        for (ClienteConsumoDTO dto : lista) {
-            lista.set(lista.indexOf(dto), new ClienteConsumoDTO(dto.cliente(), dto.valorConsumido(), totalGeral, dto.data()));
-        }
-        return lista;
+    public List<Venda> listarVendasPorData(LocalDate data) {
+        return vendaService.listAll().stream()
+                .filter(v -> v.getDataCriacao().toLocalDate().isEqual(data))
+                .toList();
     }
 
     public List<Cliente> clientesAniversariantesHoje() {
