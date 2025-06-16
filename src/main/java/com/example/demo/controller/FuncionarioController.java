@@ -81,7 +81,7 @@ public class FuncionarioController {
             @ApiResponse(responseCode = "400", description = "Funcionario não encontrado."),
             @ApiResponse(responseCode = "500", description = "Caso não tenha sido possível realizar a operação.")
     })
-    public Funcionario buscarPorId(@PathVariable UUID id) throws RelationTypeNotFoundException {
+    public FuncionarioEditDto buscarPorId(@PathVariable UUID id) throws RelationTypeNotFoundException {
         return funcionarioService.findById(id);
     }
 

@@ -6,6 +6,7 @@ import java.util.UUID;
 
 import javax.management.relation.RelationTypeNotFoundException;
 
+import com.example.demo.DTO.Relatorios.FuncionarioEditDto;
 import com.example.demo.DTO.Relatorios.FuncionarioListDto;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -180,9 +181,11 @@ public class FuncionarioService {
         return funcionarioRepository.findAll();
     }
 
-    public Funcionario findById(UUID id) {
-        return funcionarioRepository.findById(id)
+    public FuncionarioEditDto findById(UUID id) {
+        Funcionario funcionario = funcionarioRepository.findById(id)
                 .orElseThrow(FuncionarioException::funcionarioNaoEncontrado);
+        List<Permissao> permissoes = permissaoService.findByFuncionario(funcionario.getId());
+        return new FuncionarioEditDto(funcionario, permissoes);
     }
 
     public void changeAtivo(UUID id) {
