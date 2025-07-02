@@ -84,4 +84,12 @@ public class CompraService {
         return compraRepository.findByFornecedorIdAndIsPagoTrue(fornecedorId);
     }
 
+    public void deletarCompra(UUID compraId) throws RelationTypeNotFoundException {
+        Compra compra = compraRepository.findById(compraId)
+                .orElseThrow(() -> new RelationTypeNotFoundException("Compra com id " + compraId + " não encontrado."));
+        if(compra.getDataCompra())
+        compra.setAtivo(false);
+        compraRepository.save(compra);
+    }
+
 }
