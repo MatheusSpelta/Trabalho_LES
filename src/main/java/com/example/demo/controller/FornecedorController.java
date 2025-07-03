@@ -56,7 +56,7 @@ public class FornecedorController {
         return fornecedorService.findById(id);
     }
 
-    @PostMapping("/ativo/{id}")
+    @PostMapping("/excluir/{id}")
     @Operation(description = "Ativa ou desativa um Fornecedor.", responses = {
             @ApiResponse(responseCode = "200", description = "Caso o Fornecedor seja ativado ou desativado com sucesso."),
             @ApiResponse(responseCode = "400", description = "Fornecedor não encontrado."),

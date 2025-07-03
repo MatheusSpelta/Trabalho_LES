@@ -77,7 +77,7 @@ public class FuncionarioController {
         return funcionarioService.findById(id);
     }
 
-    @PostMapping("/ativo/{id}")
+    @PostMapping("/excluir/{id}")
     @Operation(description = "Muda o status de ativo de um Funcionario.", responses = {
             @ApiResponse(responseCode = "200", description = "Caso o status de ativo do Funcionario seja alterado com sucesso."),
             @ApiResponse(responseCode = "400", description = "Funcionario não encontrado."),

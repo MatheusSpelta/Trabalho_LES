@@ -59,7 +59,7 @@ public class CompraController {
         return compraService.findById(id);
     }
 
-    @PostMapping("/ativo/{id}")
+    @PostMapping("/excluir/{id}")
     @Operation(description = "Altera o status de ativo de uma compra", responses = {
             @ApiResponse(responseCode = "200", description = "Caso o status de ativo da compra seja alterado com sucesso."),
             @ApiResponse(responseCode = "400", description = "Compra não encontrada."),

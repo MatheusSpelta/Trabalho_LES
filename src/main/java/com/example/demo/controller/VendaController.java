@@ -119,7 +119,7 @@ public class VendaController {
 
     }
 
-    @PostMapping("/ativo/{id}")
+    @PostMapping("/excluir/{id}")
     @Operation(description = "Ativa ou desativa uma venda.", responses = {
             @ApiResponse(responseCode = "200", description = "Caso a venda seja ativada/desativada com sucesso."),
             @ApiResponse(responseCode = "400", description = "Venda não encontrada."),

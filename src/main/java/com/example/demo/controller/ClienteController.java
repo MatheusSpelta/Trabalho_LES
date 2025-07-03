@@ -58,7 +58,7 @@ public class ClienteController {
         return clienteService.findById(id);
     }
 
-    @PostMapping("/ativar/{id}")
+    @PostMapping("/excluir/{id}")
     @Operation(description = "Ativa um Cliente.", responses = {
             @ApiResponse(responseCode = "200", description = "Caso o Cliente seja ativado com sucesso."),
             @ApiResponse(responseCode = "400", description = "Cliente não encontrado."),

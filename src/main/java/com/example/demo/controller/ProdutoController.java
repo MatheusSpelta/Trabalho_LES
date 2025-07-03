@@ -67,7 +67,7 @@ public class ProdutoController {
         return produtoService.findAtivos();
     }
 
-    @PostMapping("/ativo/{id}")
+    @PostMapping("/excluir/{id}")
     @Operation(description = "Muda o status de ativo de um Produto.", responses = {
             @ApiResponse(responseCode = "200", description = "Caso o status de ativo do Produto seja alterado com sucesso."),
             @ApiResponse(responseCode = "400", description = "Produto não encontrado."),
