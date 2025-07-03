@@ -40,7 +40,9 @@ public class CompraService {
     }
 
     public List<Compra> findAll() {
-        return compraRepository.findAll();
+        return compraRepository.findAll().stream()
+                .filter(Compra::isAtivo);
+                .toList();
     }
 
     public Compra findById(UUID id) throws RelationTypeNotFoundException {

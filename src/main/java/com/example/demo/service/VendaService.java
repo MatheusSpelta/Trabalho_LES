@@ -207,7 +207,9 @@ public class VendaService {
     }
 
     public List<Venda> listAll() {
-        return vendaRepository.findAll();
+        return vendaRepository.findAll().stream()
+                .filter(Venda::isAtivo);
+                .collect(Collectors.toList());
     }
 
     public List<Cliente> findClientesAtendidos(LocalDate data) {

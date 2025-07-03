@@ -67,7 +67,9 @@ public class ClienteService {
     }
 
     public List<Cliente> findAll() {
-        return clienteRepository.findAll();
+        return clienteRepository.findAll().stream()
+                .filter(Cliente::isAtivo)
+                .toList();
     }
 
     public void RecargaDebito(UUID id, double valor) {

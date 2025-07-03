@@ -64,7 +64,9 @@ public class FornecedorService {
     }
 
     public List<Fornecedor> findAll() {
-        return fornecedorRepository.findAll();
+        return fornecedorRepository.findAll().stream()
+                .filter(Fornecedor::isAtivo);
+                .toList();
     }
 
     public Fornecedor findById(UUID id) {
