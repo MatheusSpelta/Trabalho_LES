@@ -208,7 +208,7 @@ public class VendaService {
 
     public List<Venda> listAll() {
         return vendaRepository.findAll().stream()
-                .filter(Venda::isAtivo);
+                .filter(Venda::isAtivo)
                 .collect(Collectors.toList());
     }
 

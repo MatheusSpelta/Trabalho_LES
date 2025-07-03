@@ -68,7 +68,7 @@ public class ProdutoService {
 
     public List<Produto> findAll() {
         return produtoRepository.findAll().stream()
-                .filter(Produto::isAtivo);
+                .filter(Produto::isAtivo)
                 .toList();
     }
 

@@ -65,7 +65,7 @@ public class FornecedorService {
 
     public List<Fornecedor> findAll() {
         return fornecedorRepository.findAll().stream()
-                .filter(Fornecedor::isAtivo);
+                .filter(Fornecedor::isAtivo)
                 .toList();
     }
 

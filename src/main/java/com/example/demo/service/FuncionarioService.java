@@ -158,7 +158,7 @@ public class FuncionarioService {
     public List<FuncionarioListDto> findAllWithPermissao() {
         List<FuncionarioListDto> list = new ArrayList<>();
         List<Funcionario> funcionarios = funcionarioRepository.findAll().stream()
-                .filter(Funcionario::isAtivo);
+                .filter(Funcionario::isAtivo)
                 .toList();
         for (Funcionario funcionario : funcionarios) {
             List<Permissao> permissoes = permissaoService.findByFuncionario(funcionario.getId());
@@ -169,7 +169,7 @@ public class FuncionarioService {
 
     public List<Funcionario> findAll() {
         return funcionarioRepository.findAll().stream()
-                .filter(Funcionario::isAtivo);
+                .filter(Funcionario::isAtivo)
                 .toList();
     }
 

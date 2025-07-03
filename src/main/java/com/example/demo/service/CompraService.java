@@ -41,7 +41,7 @@ public class CompraService {
 
     public List<Compra> findAll() {
         return compraRepository.findAll().stream()
-                .filter(Compra::isAtivo);
+                .filter(Compra::isAtivo)
                 .toList();
     }
 
