@@ -66,7 +66,7 @@ public class ClienteController {
     })
     public ResponseEntity<?> ativar(@PathVariable UUID id) throws RelationTypeNotFoundException {
         clienteService.changeAtivo(id);
-        return ResponseEntity.ok().body("Status do cliente alterado com sucesso!");
+        return ResponseEntity.ok().build();
     }
 
     @GetMapping("/buscar/cartao/{cartao}")

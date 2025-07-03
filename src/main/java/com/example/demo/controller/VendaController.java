@@ -125,12 +125,7 @@ public class VendaController {
             @ApiResponse(responseCode = "400", description = "Venda não encontrada."),
             @ApiResponse(responseCode = "500", description = "Caso não tenha sido possível realizar a operação.")
     })
-    public ResponseEntity<?> ativarDesativarVenda(@PathVariable UUID id) {
-        try {
-            vendaService.excluirVenda(id);
-            return ResponseEntity.ok().body("Status da venda alterado com sucesso!");
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
+    public void ativarDesativarVenda(@PathVariable UUID id) {
+        vendaService.excluirVenda(id);
     }
 }

@@ -65,9 +65,9 @@ public class CompraController {
             @ApiResponse(responseCode = "400", description = "Compra não encontrada."),
             @ApiResponse(responseCode = "500", description = "Caso não tenha sido possível realizar a operação.")
     })
-    public ResponseEntity<?> mudarAtivo(@PathVariable UUID id) throws RelationTypeNotFoundException {
+    public void mudarAtivo(@PathVariable UUID id) throws RelationTypeNotFoundException {
         compraService.changeAtivo(id);
-        return ResponseEntity.ok().body("Status da compra alterado com sucesso!");
+
     }
 
     @PutMapping("/pago/{id}")
