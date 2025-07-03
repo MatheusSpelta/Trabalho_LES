@@ -1,30 +1,21 @@
 package com.example.demo.controller;
 
-import java.util.List;
-import java.util.UUID;
-
-import javax.management.relation.RelationTypeNotFoundException;
-
+import com.example.demo.DTO.FuncionarioDTO;
 import com.example.demo.DTO.FuncionarioEditDto;
 import com.example.demo.DTO.FuncionarioListDto;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
-import com.example.demo.DTO.FuncionarioDTO;
 import com.example.demo.model.Funcionario;
 import com.example.demo.model.Permissao;
 import com.example.demo.service.FuncionarioService;
 import com.example.demo.service.PermissaoService;
-
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import lombok.AllArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
+
+import javax.management.relation.RelationTypeNotFoundException;
+import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/funcionario")
@@ -86,7 +77,7 @@ public class FuncionarioController {
         return funcionarioService.findById(id);
     }
 
-    @PutMapping("/mudarAtivo/{id}")
+    @PostMapping("/ativo/{id}")
     @Operation(description = "Muda o status de ativo de um Funcionario.", responses = {
             @ApiResponse(responseCode = "200", description = "Caso o status de ativo do Funcionario seja alterado com sucesso."),
             @ApiResponse(responseCode = "400", description = "Funcionario não encontrado."),

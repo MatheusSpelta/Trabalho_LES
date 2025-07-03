@@ -1,25 +1,17 @@
 package com.example.demo.controller;
 
-import java.util.List;
-import java.util.UUID;
-
-import javax.management.relation.RelationTypeNotFoundException;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
 import com.example.demo.model.Compra;
 import com.example.demo.service.CompraService;
-
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import lombok.AllArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import javax.management.relation.RelationTypeNotFoundException;
+import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/compra")
@@ -67,14 +59,15 @@ public class CompraController {
         return compraService.findById(id);
     }
 
-    @PutMapping("/ativo/{id}")
+    @PostMapping("/ativo/{id}")
     @Operation(description = "Altera o status de ativo de uma compra", responses = {
             @ApiResponse(responseCode = "200", description = "Caso o status de ativo da compra seja alterado com sucesso."),
             @ApiResponse(responseCode = "400", description = "Compra não encontrada."),
             @ApiResponse(responseCode = "500", description = "Caso não tenha sido possível realizar a operação.")
     })
-    public void mudarAtivo(@PathVariable UUID id) throws RelationTypeNotFoundException {
+    public ResponseEntity<?> mudarAtivo(@PathVariable UUID id) throws RelationTypeNotFoundException {
         compraService.changeAtivo(id);
+        return ResponseEntity.ok().body("Status da compra alterado com sucesso!");
     }
 
     @PutMapping("/pago/{id}")

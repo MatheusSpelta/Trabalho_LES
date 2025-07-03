@@ -118,4 +118,19 @@ public class VendaController {
         return ResponseEntity.ok(vendaService.quitarDebito(cliente.clienteId()));
 
     }
+
+    @PostMapping("/ativo/{id}")
+    @Operation(description = "Ativa ou desativa uma venda.", responses = {
+            @ApiResponse(responseCode = "200", description = "Caso a venda seja ativada/desativada com sucesso."),
+            @ApiResponse(responseCode = "400", description = "Venda não encontrada."),
+            @ApiResponse(responseCode = "500", description = "Caso não tenha sido possível realizar a operação.")
+    })
+    public ResponseEntity<?> ativarDesativarVenda(@PathVariable UUID id) {
+        try {
+            vendaService.excluirVenda(id);
+            return ResponseEntity.ok().body("Status da venda alterado com sucesso!");
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
 }

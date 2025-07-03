@@ -138,7 +138,6 @@ public class ClienteService {
     }
 
     public void deleteById(UUID id) {
-        //Validar se o cliente tem debito em aberto.
         Cliente cliente = clienteRepository.findById(id)
                 .orElseThrow(ClienteException::clienteNaoEncontrado);
         cliente.setAtivo(!cliente.isAtivo());

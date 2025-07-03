@@ -1,25 +1,16 @@
 package com.example.demo.controller;
 
-import java.util.List;
-import java.util.UUID;
-
-import javax.management.relation.RelationTypeNotFoundException;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
 import com.example.demo.model.Produto;
 import com.example.demo.service.ProdutoService;
-
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import lombok.AllArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
+
+import javax.management.relation.RelationTypeNotFoundException;
+import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/produto")
@@ -76,7 +67,7 @@ public class ProdutoController {
         return produtoService.findAtivos();
     }
 
-    @PutMapping("/mudarAtivo/{id}")
+    @PostMapping("/ativo/{id}")
     @Operation(description = "Muda o status de ativo de um Produto.", responses = {
             @ApiResponse(responseCode = "200", description = "Caso o status de ativo do Produto seja alterado com sucesso."),
             @ApiResponse(responseCode = "400", description = "Produto não encontrado."),

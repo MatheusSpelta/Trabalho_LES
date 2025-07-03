@@ -310,4 +310,31 @@ public class VendaService {
         return clienteService.salvar(cliente);
     }
 
+    public void excluirVenda(UUID vendaId) {
+        Venda venda = vendaRepository.findById(vendaId)
+                .orElseThrow(() -> new RuntimeException("Venda com id " + vendaId + " não encontrada."));
+
+        // Verifica se a venda foi realizada hoje
+        LocalDate dataVenda = venda.getDataCriacao().toLocalDate();
+        if (!dataVenda.equals(LocalDate.now())) {
+            throw new RuntimeException("Só é permitido excluir vendas do dia atual.");
+        }
+
+        venda.setAtivo(!venda.isAtivo());
+
+        // Retorna o saldo ao cliente
+        Cliente cliente = venda.getCliente();
+        cliente.setSaldoDebito(cliente.getSaldoDebito() + venda.getPagamentoDebito() + venda.getPagamentoCredito());
+        clienteService.salvar(cliente);
+
+        // Desativa os produtos da venda
+        List<VendaProduto> produtos = vendaProdutoService.findByVendaId(vendaId, true);
+        for (VendaProduto produto : produtos) {
+            produto.setAtivo(venda.isAtivo());
+            vendaProdutoService.salvar(produto);
+        }
+
+        vendaRepository.save(venda);
+    }
+
 }

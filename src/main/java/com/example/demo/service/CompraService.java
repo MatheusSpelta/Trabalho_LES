@@ -1,26 +1,23 @@
 package com.example.demo.service;
 
+import com.example.demo.model.Compra;
+import com.example.demo.repository.CompraRepository;
+import lombok.AllArgsConstructor;
+import org.springframework.stereotype.Service;
+
+import javax.management.relation.RelationTypeNotFoundException;
 import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
-import javax.management.relation.RelationTypeNotFoundException;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
-import com.example.demo.model.Compra;
-import com.example.demo.repository.CompraRepository;
-
-import io.swagger.v3.oas.annotations.tags.Tag;
 
 @Service
-@Tag(name = "compra", description = "Fornece serviços web REST para acesso e manipualação de Compras.")
+@AllArgsConstructor
 public class CompraService {
 
-    @Autowired
-    private CompraRepository compraRepository;
+    private final CompraRepository compraRepository;
+    private final ClienteService clienteService;
 
     public Compra saveAll(Compra compra) {
         return compraRepository.save(compra);
@@ -87,8 +84,7 @@ public class CompraService {
     public void deletarCompra(UUID compraId) throws RelationTypeNotFoundException {
         Compra compra = compraRepository.findById(compraId)
                 .orElseThrow(() -> new RelationTypeNotFoundException("Compra com id " + compraId + " não encontrado."));
-        if(compra.getDataCompra())
-        compra.setAtivo(false);
+        compra.setAtivo(!compra.isAtivo());
         compraRepository.save(compra);
     }
 

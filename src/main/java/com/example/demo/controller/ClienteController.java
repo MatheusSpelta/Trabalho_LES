@@ -6,6 +6,7 @@ import com.example.demo.service.ClienteService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import lombok.AllArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.management.relation.RelationTypeNotFoundException;
@@ -57,14 +58,15 @@ public class ClienteController {
         return clienteService.findById(id);
     }
 
-    @PutMapping("/ativar/{id}")
+    @PostMapping("/ativar/{id}")
     @Operation(description = "Ativa um Cliente.", responses = {
             @ApiResponse(responseCode = "200", description = "Caso o Cliente seja ativado com sucesso."),
             @ApiResponse(responseCode = "400", description = "Cliente não encontrado."),
             @ApiResponse(responseCode = "500", description = "Caso não tenha sido possível realizar a operação.")
     })
-    public void ativar(@PathVariable UUID id) throws RelationTypeNotFoundException {
+    public ResponseEntity<?> ativar(@PathVariable UUID id) throws RelationTypeNotFoundException {
         clienteService.changeAtivo(id);
+        return ResponseEntity.ok().body("Status do cliente alterado com sucesso!");
     }
 
     @GetMapping("/buscar/cartao/{cartao}")

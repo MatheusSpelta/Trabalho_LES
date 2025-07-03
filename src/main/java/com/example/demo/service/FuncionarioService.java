@@ -1,33 +1,22 @@
 package com.example.demo.service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
-
-import javax.management.relation.RelationTypeNotFoundException;
-
-import com.example.demo.DTO.FuncionarioEditDto;
-import com.example.demo.DTO.FuncionarioListDto;
+import com.example.demo.DTO.*;
+import com.example.demo.exception.FuncionarioException;
+import com.example.demo.exception.PermissaoException;
+import com.example.demo.model.*;
+import com.example.demo.repository.FuncionarioRepository;
+import com.example.demo.security.JwtUtil;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import com.example.demo.DTO.FuncionarioDTO;
-import com.example.demo.DTO.LoginRequest;
-import com.example.demo.DTO.LoginResponse;
-import com.example.demo.exception.FuncionarioException;
-import com.example.demo.exception.PermissaoException;
-import com.example.demo.model.Endereco;
-import com.example.demo.model.Funcionario;
-import com.example.demo.model.InterfacePermissao;
-import com.example.demo.model.Permissao;
-import com.example.demo.model.TipoPermissao;
-import com.example.demo.repository.FuncionarioRepository;
-import com.example.demo.security.JwtUtil;
-
-import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.transaction.Transactional;
+import javax.management.relation.RelationTypeNotFoundException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 
 @Service
 @Tag(name = "Funcionario", description = "Fornece serviços web REST para acesso e manipulação de dados de Funcionarios")
@@ -195,7 +184,6 @@ public class FuncionarioService {
     public void changeAtivo(UUID id) {
         Funcionario funcionario = funcionarioRepository.findById(id)
                 .orElseThrow(FuncionarioException::funcionarioNaoEncontrado);
-
         funcionario.setAtivo(!funcionario.isAtivo());
 
         funcionarioRepository.save(funcionario);

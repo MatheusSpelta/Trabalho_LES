@@ -1,19 +1,20 @@
 package com.example.demo.service;
 
-import java.util.List;
-import java.util.UUID;
-
+import com.example.demo.model.VendaProduto;
+import com.example.demo.repository.VendaProdutoRepository;
+import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.example.demo.model.VendaProduto;
-import com.example.demo.repository.VendaProdutoRepository;
+import java.util.List;
+import java.util.UUID;
 
 @Service
+@AllArgsConstructor
 public class VendaProdutoService {
 
-    @Autowired
-    private VendaProdutoRepository vendaProdutoRepository;
+
+    private final VendaProdutoRepository vendaProdutoRepository;
 
     public void salvar(VendaProduto vendaProduto) {
         vendaProdutoRepository.save(vendaProduto);
@@ -29,5 +30,12 @@ public class VendaProdutoService {
 
     public List<VendaProduto> findByVendaId(UUID vendaId) {
         return vendaProdutoRepository.findByVendaId(vendaId);
+    }
+
+    public void desativarVendaProduto(UUID vendaProdutoId) {
+        VendaProduto vendaProduto = vendaProdutoRepository.findById(vendaProdutoId)
+                .orElseThrow(() -> new RuntimeException("VendaProduto não encontrado com id: " + vendaProdutoId));
+        vendaProduto.setAtivo(false);
+        vendaProdutoRepository.save(vendaProduto);
     }
 }

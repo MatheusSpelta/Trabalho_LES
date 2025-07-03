@@ -77,7 +77,6 @@ public class ProdutoService {
     public void changeAtivo(UUID id) {
         Produto produto = produtoRepository.findById(id)
                 .orElseThrow(ProdutoException::produtoNaoEncontrado);
-
         produto.setAtivo(!produto.isAtivo());
         produtoRepository.save(produto);
     }
