@@ -15,7 +15,7 @@ import java.util.UUID;
 @Repository
 public interface VendaRepository extends JpaRepository<Venda, UUID> {
 
-    List<Venda> findByClienteId(UUID clienteId);
+    List<Venda> findByClienteIdAndAtivoTrue(UUID clienteId);
 
     @Query("SELECT DISTINCT v.cliente FROM Venda v WHERE DATE(v.dataCriacao) = :data")
     List<Cliente> findClientesAtendidosPorDia(@Param("data") LocalDate data);

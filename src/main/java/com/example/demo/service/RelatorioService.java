@@ -8,7 +8,6 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.ZonedDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -41,6 +40,7 @@ public class RelatorioService {
     public List<Venda> obterVendasDiariaDetalhada(LocalDate data) {
         return vendaService.listAll().stream()
                 .filter(v -> v.getDataCriacao().toLocalDate().isEqual(data))
+                .filter(Venda::isAtivo)
                 .collect(Collectors.toList());
     }
 
@@ -52,8 +52,10 @@ public class RelatorioService {
             double valor = vendaService.listarVendasPorClienteId(cliente.getId()).stream()
                     .filter(v -> v.venda().getDataCriacao().toLocalDate().isEqual(data))
                     .mapToDouble(v -> v.venda().getValorTotal()).sum();
-            totalGeral += valor;
-            lista.add(new ClienteConsumoDTO(cliente, valor, 0, data)); // totalGeral será preenchido depois
+            if (valor > 0) {
+                totalGeral += valor;
+                lista.add(new ClienteConsumoDTO(cliente, valor, 0, data)); // totalGeral será preenchido depois
+            }
         }
         for (ClienteConsumoDTO dto : lista) {
             lista.set(lista.indexOf(dto), new ClienteConsumoDTO(dto.cliente(), dto.valorConsumido(), totalGeral, dto.data()));
@@ -81,12 +83,13 @@ public class RelatorioService {
                                 (dataVenda.isEqual(fim) || dataVenda.isBefore(fim));
                     })
                     .toList();
+            if (!vendasFiltradas.isEmpty()) {
+                double totalVendas = vendasFiltradas.stream().mapToDouble(v -> v.venda().getValorTotal()).sum();
+                int quantidadeVendas = vendasFiltradas.size();
+                double ticketMedio = quantidadeVendas > 0 ? totalVendas / quantidadeVendas : 0.0;
 
-            double totalVendas = vendasFiltradas.stream().mapToDouble(v -> v.venda().getValorTotal()).sum();
-            int quantidadeVendas = vendasFiltradas.size();
-            double ticketMedio = quantidadeVendas > 0 ? totalVendas / quantidadeVendas : 0.0;
-
-            ticketMedioPorCliente.add(new ClienteTicketMedioDTO(cliente, ticketMedio));
+                ticketMedioPorCliente.add(new ClienteTicketMedioDTO(cliente, ticketMedio));
+            }
         }
 
         return ticketMedioPorCliente;
@@ -97,17 +100,19 @@ public class RelatorioService {
         List<ClienteRelatorioDetalhadoDTO> relatorio = new ArrayList<>();
         for (Cliente cliente : clientes) {
             List<VendaResponseDTO> vendas = vendaService.listarVendasPorClienteId(cliente.getId());
-            double valorVendido = vendas.stream().mapToDouble(v -> v.venda().getValorTotal()).sum();
-            LocalDate dataUltimaCompra = vendas.stream()
-                    .map(v -> v.venda().getDataCriacao().toLocalDate())
-                    .max(LocalDate::compareTo).orElse(null);
-            relatorio.add(new ClienteRelatorioDetalhadoDTO(
-                    cliente,
-                    valorVendido,
-                    cliente.getLimiteCredito(),
-                    cliente.getSaldoDebito(),
-                    dataUltimaCompra
-            ));
+            if (!vendas.isEmpty()) {
+                double valorVendido = vendas.stream().mapToDouble(v -> v.venda().getValorTotal()).sum();
+                LocalDate dataUltimaCompra = vendas.stream()
+                        .map(v -> v.venda().getDataCriacao().toLocalDate())
+                        .max(LocalDate::compareTo).orElse(null);
+                relatorio.add(new ClienteRelatorioDetalhadoDTO(
+                        cliente,
+                        valorVendido,
+                        cliente.getLimiteCredito(),
+                        cliente.getSaldoDebito(),
+                        dataUltimaCompra
+                ));
+            }
         }
         return relatorio;
     }
