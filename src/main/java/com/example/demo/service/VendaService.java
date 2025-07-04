@@ -322,7 +322,8 @@ public class VendaService {
             throw new RuntimeException("Só é permitido excluir vendas do dia atual.");
         }
 
-        venda.setAtivo(!venda.isAtivo());
+        venda.setAtivo(false);
+        venda.setPago(true);
 
         // Retorna o saldo ao cliente
         Cliente cliente = venda.getCliente();
