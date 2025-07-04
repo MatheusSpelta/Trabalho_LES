@@ -62,8 +62,8 @@ public class FornecedorController {
             @ApiResponse(responseCode = "400", description = "Fornecedor não encontrado."),
             @ApiResponse(responseCode = "500", description = "Caso não tenha sido possível realizar a operação.")
     })
-    public ResponseEntity<?> ativar(@PathVariable UUID id) {
+    public void ativar(@PathVariable UUID id) {
         fornecedorService.changeAtivo(id);
-        return ResponseEntity.ok().body("Status do Fornecedor alterado com sucesso.");
+
     }
 }

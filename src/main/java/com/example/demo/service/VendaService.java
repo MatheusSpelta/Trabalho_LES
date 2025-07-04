@@ -165,7 +165,7 @@ public class VendaService {
             throw ClienteException.clienteNaoEncontrado();
         }
 
-        List<Venda> vendas = vendaRepository.findByClienteId(cliente.getId());
+        List<Venda> vendas = vendaRepository.findByClienteIdAndAtivoTrue(cliente.getId());
         return vendas.stream().map(venda -> {
             List<VendaProduto> produtos = vendaProdutoService.findByVendaId(venda.getId());
             return new VendaResponseDTO(venda, produtos);
@@ -178,7 +178,7 @@ public class VendaService {
             throw ClienteException.clienteNaoEncontrado();
         }
 
-        List<Venda> vendas = vendaRepository.findByClienteId(cliente.getId());
+        List<Venda> vendas = vendaRepository.findByClienteIdAndAtivoTrue(cliente.getId());
         return vendas.stream().map(venda -> {
             List<VendaProduto> produtos = vendaProdutoService.findByVendaId(venda.getId());
             return new VendaResponseDTO(venda, produtos);
@@ -186,7 +186,7 @@ public class VendaService {
     }
 
     public List<VendaResponseDTO> listarVendasPorClienteId(UUID clienteId) {
-        List<Venda> vendas = vendaRepository.findByClienteId(clienteId);
+        List<Venda> vendas = vendaRepository.findByClienteIdAndAtivoTrue(clienteId);
         return vendas.stream()
                 .map(venda -> {
                     List<VendaProduto> produtos = vendaProdutoService.findByVendaId(venda.getId());
@@ -293,7 +293,7 @@ public class VendaService {
     }
 
     public Cliente quitarDebito(UUID clienteId) {
-        List<Venda> vendas = vendaRepository.findByClienteId(clienteId);
+        List<Venda> vendas = vendaRepository.findByClienteIdAndAtivoTrue(clienteId);
         Cliente cliente = clienteService.findById(clienteId);
         if (cliente == null) {
             throw new IllegalArgumentException("Cliente não encontrado!");
